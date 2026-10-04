@@ -6,7 +6,7 @@
 
 ## 🎨 Tech Stack & Design System
 
-- **Framework:** Next.js 14 / React 18
+- **Framework:** Next.js 15 / React 18 / Tailwind CSS v4
 - **Styling:** Tailwind CSS with custom CSS variables
 - **Color Palette:**
   - **Light Theme:** Mint Sage (`#DAF1DE`), Muted Sage Border (`#8EB69B`), Deep Forest Pine Accent (`#163832`), Night Ink (`#051F20`)
