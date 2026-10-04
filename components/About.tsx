@@ -1,84 +1,144 @@
-import { site, techStack, education } from "@/lib/data";
-import ScanLine from "./ScanLine";
+"use client";
+
+import { site, education } from "@/lib/data";
 
 export default function About() {
-  return (
-    <section id="about" className="relative border-t py-28" style={{ borderColor: "var(--border)" }}>
-      <ScanLine targetId="about" />
+  const currentEdu = education[0];
 
+  return (
+    <section
+      id="about"
+      className="relative border-t py-24 md:py-32"
+      style={{ borderColor: "var(--border)" }}
+    >
       <div className="container-px">
-        <div className="grid grid-cols-1 gap-12 lg:grid-cols-12">
-          {/* Left bio */}
-          <div className="lg:col-span-5">
-            <span className="font-mono-label text-xs uppercase" style={{ color: "var(--accent)" }}>
-              01 // Background & Philosophy
-            </span>
+        {/* Section Header */}
+        <div className="flex items-center gap-3">
+          <span
+            className="font-mono-label text-xs uppercase tracking-widest"
+            style={{ color: "var(--accent)" }}
+          >
+            01 // About
+          </span>
+          <div
+            className="h-[1px] flex-1"
+            style={{ backgroundColor: "var(--border)" }}
+          />
+        </div>
+
+        {/* Content Layout */}
+        <div className="mt-10 grid grid-cols-1 gap-12 lg:grid-cols-12">
+          {/* Main Short Bio */}
+          <div className="lg:col-span-8">
             <h2
-              className="font-display mt-3 text-3xl font-medium tracking-tight md:text-4xl"
+              className="font-display text-2xl font-medium tracking-tight sm:text-3xl md:text-4xl"
               style={{ color: "var(--ink)" }}
             >
-              Engineering intelligence with zero bloat.
+              Building intelligent, production-ready systems with uncompromising performance.
             </h2>
 
-            <div className="mt-6 space-y-4 text-sm leading-relaxed md:text-base" style={{ color: "var(--muted)" }}>
-              <p>{site.about}</p>
+            <div
+              className="mt-6 space-y-4 text-base leading-relaxed md:text-lg"
+              style={{ color: "var(--muted)" }}
+            >
               <p>
-                My focus centers on high-efficiency generative AI applications — combining QLoRA fine-tuned open-source models with deterministic security boundaries and sub-second retrieval systems.
+                I am a Computer Systems Engineering student at QUEST Nawabshah
+                specializing in Generative AI, real-time NLP pipelines, and clean
+                full-stack web applications.
               </p>
-            </div>
-
-            {/* Academic profile */}
-            <div className="mt-8 border-t pt-6" style={{ borderColor: "var(--border)" }}>
-              <span className="font-mono-label text-xs uppercase" style={{ color: "var(--accent)" }}>
-                Academic Affiliation
-              </span>
-              <div className="mt-3 space-y-4">
-                {education.map((edu) => (
-                  <div key={edu.degree} className="rounded-sm border p-4 transition-all hover:border-accent" style={{ borderColor: "var(--border)", backgroundColor: "var(--panel)" }}>
-                    <div className="font-display text-sm font-semibold" style={{ color: "var(--ink)" }}>
-                      {edu.degree}
-                    </div>
-                    <div className="text-xs" style={{ color: "var(--muted)" }}>
-                      {edu.institution}
-                    </div>
-                    <div className="font-mono-label mt-2 text-[11px]" style={{ color: "var(--accent)" }}>
-                      {edu.period} · {edu.details}
-                    </div>
-                  </div>
-                ))}
-              </div>
+              <p>
+                I focus on fine-tuning open-source LLMs (LoRA/QLoRA), designing fast vector
+                retrieval engines, and shipping scalable web interfaces that prioritize
+                speed, security, and developer ergonomics.
+              </p>
             </div>
           </div>
 
-          {/* Right tech taxonomy */}
-          <div className="lg:col-span-7">
-            <span className="font-mono-label text-xs uppercase" style={{ color: "var(--accent)" }}>
-              02 // Technical Skills & Taxonomy
-            </span>
-
-            <div className="mt-6 space-y-6">
-              {techStack.map((group) => (
+          {/* Quick Context Card */}
+          <div className="lg:col-span-4">
+            <div
+              className="rounded-sm border p-6 space-y-5"
+              style={{
+                borderColor: "var(--border)",
+                backgroundColor: "var(--panel)",
+              }}
+            >
+              <div>
                 <div
-                  key={group.group}
-                  className="rounded-sm border p-5"
-                  style={{ borderColor: "var(--border)", backgroundColor: "var(--panel)" }}
+                  className="font-mono-label text-[11px] uppercase tracking-wider"
+                  style={{ color: "var(--accent)" }}
                 >
-                  <div className="font-mono-label text-xs uppercase tracking-wider" style={{ color: "var(--accent)" }}>
-                    {group.group}
-                  </div>
-                  <div className="mt-3 flex flex-wrap gap-2">
-                    {group.items.map((item) => (
-                      <span
-                        key={item}
-                        className="chip rounded-sm border px-3 py-1 font-mono-label text-xs"
-                        style={{ borderColor: "var(--border)", color: "var(--ink)", backgroundColor: "var(--bg)" }}
-                      >
-                        {item}
-                      </span>
-                    ))}
-                  </div>
+                  Education
                 </div>
-              ))}
+                <div
+                  className="mt-1 font-display text-sm font-semibold"
+                  style={{ color: "var(--ink)" }}
+                >
+                  BE Computer System Engineering
+                </div>
+                <div className="mt-0.5 text-xs" style={{ color: "var(--muted)" }}>
+                  {currentEdu.institution}
+                </div>
+                <div
+                  className="mt-1 font-mono-label text-[11px]"
+                  style={{ color: "var(--accent)" }}
+                >
+                  2024 – 2028 · CGPA 3.10
+                </div>
+              </div>
+
+              <div
+                className="border-t pt-4"
+                style={{ borderColor: "var(--border)" }}
+              >
+                <div
+                  className="font-mono-label text-[11px] uppercase tracking-wider"
+                  style={{ color: "var(--accent)" }}
+                >
+                  Location
+                </div>
+                <div
+                  className="mt-1 font-display text-sm font-semibold"
+                  style={{ color: "var(--ink)" }}
+                >
+                  {site.location}
+                </div>
+                <div
+                  className="mt-0.5 font-mono-label text-xs"
+                  style={{ color: "var(--muted)" }}
+                >
+                  Available for Remote & Relocation
+                </div>
+              </div>
+
+              <div
+                className="border-t pt-4"
+                style={{ borderColor: "var(--border)" }}
+              >
+                <div
+                  className="font-mono-label text-[11px] uppercase tracking-wider"
+                  style={{ color: "var(--accent)" }}
+                >
+                  Specializations
+                </div>
+                <div className="mt-2 flex flex-wrap gap-1.5">
+                  {["LoRA Fine-Tuning", "Vector RAG", "Next.js 15", "PyTorch", "FastAPI"].map(
+                    (tag) => (
+                      <span
+                        key={tag}
+                        className="rounded-sm border px-2 py-0.5 font-mono-label text-[11px]"
+                        style={{
+                          borderColor: "var(--border)",
+                          backgroundColor: "var(--bg)",
+                          color: "var(--ink)",
+                        }}
+                      >
+                        {tag}
+                      </span>
+                    )
+                  )}
+                </div>
+              </div>
             </div>
           </div>
         </div>

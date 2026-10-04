@@ -17,10 +17,10 @@ export const site = {
 };
 
 export const stats = [
-  { label: "99.05% benchmark accuracy" },
-  { label: "< 50ms inference latency" },
-  { label: "4 software & AI internships" },
-  { label: "18+ curated projects & models" },
+  { value: "99.05%", label: "Benchmark Accuracy" },
+  { value: "< 50ms", label: "Inference Latency" },
+  { value: "4+", label: "Software Internships" },
+  { value: "18+", label: "Curated Projects & Models" },
 ];
 
 export const techStack = [
