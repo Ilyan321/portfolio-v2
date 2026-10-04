@@ -14,7 +14,7 @@ export default function Projects() {
 
   const toggleRow = (slug: string) => {
     setExpandedSlugs((prev) =>
-      prev.includes(slug) ? prev.filter((s) => s !== slug) : [...prev, slug]
+      prev.includes(slug) ? [] : [slug]
     );
   };
 
