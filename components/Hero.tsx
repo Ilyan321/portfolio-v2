@@ -2,6 +2,7 @@
 
 import { stats } from "@/lib/data";
 import ScrollReveal from "./ScrollReveal";
+import HeroAnimation from "./HeroAnimation";
 
 export default function Hero() {
   return (
@@ -111,88 +112,8 @@ export default function Hero() {
           </div>
 
           {/* Right Column: Architectural Pipeline & System Telemetry (Authentic, Not AI Slop) */}
-          <div className="lg:col-span-5">
-            <div
-              className="relative overflow-hidden rounded-sm border p-6"
-              style={{
-                borderColor: "var(--border)",
-                backgroundColor: "var(--panel)",
-              }}
-            >
-              {/* Telemetry Header */}
-              <div
-                className="flex items-center justify-between border-b pb-4 font-mono-label text-xs uppercase tracking-wider"
-                style={{ borderColor: "var(--border)" }}
-              >
-                <div className="flex items-center gap-2">
-                  <span className="h-2 w-2 rounded-full" style={{ backgroundColor: "var(--accent)" }} />
-                  <span className="font-semibold" style={{ color: "var(--ink)" }}>SYSTEM TELEMETRY</span>
-                </div>
-                <span className="text-[10px]" style={{ color: "var(--muted)" }}>SYS_OK // 2026</span>
-              </div>
-
-              {/* Core Disciplines */}
-              <div className="mt-5 space-y-3 font-mono-label text-xs">
-                <div className="flex items-baseline justify-between">
-                  <span style={{ color: "var(--muted)" }}>01 · NLP & GENAI</span>
-                  <span className="font-medium" style={{ color: "var(--ink)" }}>LoRA / FAISS / QLoRA</span>
-                </div>
-                <div className="flex items-baseline justify-between">
-                  <span style={{ color: "var(--muted)" }}>02 · FULL-STACK WEB</span>
-                  <span className="font-medium" style={{ color: "var(--ink)" }}>Next.js 15 / React / TS</span>
-                </div>
-                <div className="flex items-baseline justify-between">
-                  <span style={{ color: "var(--muted)" }}>03 · SYSTEMS & LOGIC</span>
-                  <span className="font-medium" style={{ color: "var(--ink)" }}>Python / C++ / AST Safety</span>
-                </div>
-                <div className="flex items-baseline justify-between">
-                  <span style={{ color: "var(--muted)" }}>04 · DATABASE & CLOUD</span>
-                  <span className="font-medium" style={{ color: "var(--ink)" }}>Supabase / Postgres / VPS</span>
-                </div>
-              </div>
-
-              {/* Execution Pipeline Trace */}
-              <div
-                className="mt-6 rounded-sm border p-4 font-mono-label"
-                style={{
-                  borderColor: "var(--border)",
-                  backgroundColor: "var(--bg)",
-                }}
-              >
-                <div className="mb-3 flex items-center justify-between text-[10px] uppercase tracking-wider">
-                  <span style={{ color: "var(--muted)" }}>INFERENCE PIPELINE</span>
-                  <span style={{ color: "var(--accent)" }}>SUB-50ms TARGET</span>
-                </div>
-
-                <div className="space-y-2 text-xs">
-                  <div className="flex items-center justify-between">
-                    <span style={{ color: "var(--ink)" }}>› Embedding Vectorization</span>
-                    <span style={{ color: "var(--accent)" }}>11.8ms</span>
-                  </div>
-                  <div className="flex items-center justify-between">
-                    <span style={{ color: "var(--ink)" }}>› Semantic Retrieval (FAISS)</span>
-                    <span style={{ color: "var(--accent)" }}>14.2ms</span>
-                  </div>
-                  <div className="flex items-center justify-between">
-                    <span style={{ color: "var(--ink)" }}>› LoRA Adapter Forward Pass</span>
-                    <span style={{ color: "var(--accent)" }}>21.5ms</span>
-                  </div>
-                  <div className="flex items-center justify-between border-t pt-2" style={{ borderColor: "var(--border)" }}>
-                    <span className="font-semibold" style={{ color: "var(--ink)" }}>Total Pipeline Latency</span>
-                    <span className="font-bold" style={{ color: "var(--accent)" }}>47.5ms</span>
-                  </div>
-                </div>
-              </div>
-
-              {/* Meta Status Footer */}
-              <div
-                className="mt-5 flex items-center justify-between font-mono-label text-[10px] uppercase tracking-wider"
-                style={{ color: "var(--muted)" }}
-              >
-                <span>LOC: Nawabshah, PK</span>
-                <span>STATUS: Open To Work</span>
-              </div>
-            </div>
+          <div className="lg:col-span-5 h-[400px] lg:h-[500px] w-full">
+            <HeroAnimation />
           </div>
 
         </div>
