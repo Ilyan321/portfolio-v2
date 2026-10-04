@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { motion, AnimatePresence } from "framer-motion";
 import { projects } from "@/lib/data";
 import ScrollReveal from "./ScrollReveal";
 
@@ -156,53 +157,68 @@ export default function Projects() {
                 </button>
 
                 {/* Inline Expanded Panel */}
-                {isExpanded && (
-                  <div
-                    className="border-t px-5 pt-4 pb-6 sm:px-6 sm:pb-6"
-                    style={{ borderColor: "var(--border)" }}
-                  >
-                    <p
-                      className="font-body text-sm leading-relaxed sm:text-base max-w-3xl"
-                      style={{ color: "var(--muted)" }}
+                <AnimatePresence initial={false}>
+                  {isExpanded && (
+                    <motion.div
+                      key="content"
+                      initial="collapsed"
+                      animate="open"
+                      exit="collapsed"
+                      variants={{
+                        open: { opacity: 1, height: "auto" },
+                        collapsed: { opacity: 0, height: 0 },
+                      }}
+                      transition={{ duration: 0.3, ease: [0.04, 0.62, 0.23, 0.98] }}
+                      className="overflow-hidden"
                     >
-                      {project.description}
-                    </p>
-
-                    {/* All Tech Stack Pills */}
-                    <div className="mt-4 flex flex-wrap gap-1.5">
-                      {project.stack.map((tech) => (
-                        <span
-                          key={tech}
-                          className="font-mono-label rounded-sm border px-2.5 py-0.5 text-[11px]"
-                          style={{
-                            borderColor: "var(--border)",
-                            backgroundColor: "var(--bg)",
-                            color: "var(--ink)",
-                          }}
+                      <div
+                        className="border-t px-5 pt-4 pb-6 sm:px-6 sm:pb-6"
+                        style={{ borderColor: "var(--border)" }}
+                      >
+                        <p
+                          className="font-body text-sm leading-relaxed sm:text-base max-w-3xl"
+                          style={{ color: "var(--muted)" }}
                         >
-                          {tech}
-                        </span>
-                      ))}
-                    </div>
+                          {project.description}
+                        </p>
 
-                    {/* Links */}
-                    <div className="mt-5 flex flex-wrap items-center gap-5 pt-2">
-                      {project.links.map((link) => (
-                        <a
-                          key={link.label}
-                          href={link.href}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="font-mono-label inline-flex items-center gap-1.5 text-xs font-medium uppercase tracking-wider underline underline-offset-4 transition-colors hover:text-ink"
-                          style={{ color: "var(--accent)" }}
-                        >
-                          <span>{link.label}</span>
-                          <span>↗</span>
-                        </a>
-                      ))}
-                    </div>
-                  </div>
-                )}
+                        {/* All Tech Stack Pills */}
+                        <div className="mt-4 flex flex-wrap gap-1.5">
+                          {project.stack.map((tech) => (
+                            <span
+                              key={tech}
+                              className="font-mono-label rounded-sm border px-2.5 py-0.5 text-[11px]"
+                              style={{
+                                borderColor: "var(--border)",
+                                backgroundColor: "var(--bg)",
+                                color: "var(--ink)",
+                              }}
+                            >
+                              {tech}
+                            </span>
+                          ))}
+                        </div>
+
+                        {/* Links */}
+                        <div className="mt-5 flex flex-wrap items-center gap-5 pt-2">
+                          {project.links.map((link) => (
+                            <a
+                              key={link.label}
+                              href={link.href}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="font-mono-label inline-flex items-center gap-1.5 text-xs font-medium uppercase tracking-wider underline underline-offset-4 transition-colors hover:text-ink"
+                              style={{ color: "var(--accent)" }}
+                            >
+                              <span>{link.label}</span>
+                              <span>↗</span>
+                            </a>
+                          ))}
+                        </div>
+                      </div>
+                    </motion.div>
+                  )}
+                </AnimatePresence>
               </div>
             );
           })}
