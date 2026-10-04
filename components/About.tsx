@@ -1,6 +1,7 @@
 "use client";
 
 import { education, techStack } from "@/lib/data";
+import ScrollReveal from "./ScrollReveal";
 
 export default function About() {
   const questEdu = education[0];
@@ -15,7 +16,8 @@ export default function About() {
         backgroundColor: "var(--bg)",
       }}
     >
-      <div className="container-px">
+      <ScrollReveal width="100%">
+        <div className="container-px">
         {/* Section Eyebrow Line */}
         <div className="flex items-center gap-3">
           <span
@@ -141,6 +143,7 @@ export default function About() {
 
         </div>
       </div>
+      </ScrollReveal>
     </section>
   );
 }

@@ -1,5 +1,7 @@
 "use client";
 
+import ScrollReveal from "./ScrollReveal";
+
 export default function Experience() {
   const experiences = [
     {
@@ -21,7 +23,8 @@ export default function Experience() {
         backgroundColor: "var(--bg)",
       }}
     >
-      <div className="container-px">
+      <ScrollReveal width="100%">
+        <div className="container-px">
         {/* Section Eyebrow Line */}
         <div className="flex items-center gap-3 mb-8">
           <span
@@ -76,6 +79,7 @@ export default function Experience() {
           Specialized in autonomous knowledge engineering, LLM orchestration, and real-time inference pipelines.
         </p>
       </div>
+      </ScrollReveal>
     </section>
   );
 }

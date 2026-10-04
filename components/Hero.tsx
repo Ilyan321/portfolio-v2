@@ -1,6 +1,7 @@
 "use client";
 
 import { stats } from "@/lib/data";
+import ScrollReveal from "./ScrollReveal";
 
 export default function Hero() {
   return (
@@ -9,7 +10,8 @@ export default function Hero() {
       className="relative flex min-h-[calc(100vh-4rem)] w-full items-center pt-24 pb-16 md:pt-28 md:pb-20"
       style={{ backgroundColor: "var(--bg)" }}
     >
-      <div className="container-px w-full">
+      <ScrollReveal width="100%" delay={0.1}>
+        <div className="container-px w-full">
         <div className="grid grid-cols-1 items-center gap-12 lg:grid-cols-12 lg:gap-14">
           
           {/* Left Column: Editorial & Value Proposition */}
@@ -195,6 +197,7 @@ export default function Hero() {
 
         </div>
       </div>
+      </ScrollReveal>
     </section>
   );
 }

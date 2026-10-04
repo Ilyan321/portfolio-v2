@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { site } from "@/lib/data";
+import ScrollReveal from "./ScrollReveal";
 
 export default function Contact() {
   const [submitted, setSubmitted] = useState(false);
@@ -56,7 +57,8 @@ export default function Contact() {
         backgroundColor: "var(--bg)",
       }}
     >
-      <div className="container-px grid grid-cols-1 gap-14 md:grid-cols-2">
+      <ScrollReveal width="100%">
+        <div className="container-px grid grid-cols-1 gap-14 md:grid-cols-2">
         {/* Left Column: Direct Links & Narrative */}
         <div>
           <h2
@@ -222,6 +224,7 @@ export default function Contact() {
           )}
         </div>
       </div>
+      </ScrollReveal>
     </section>
   );
 }

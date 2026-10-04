@@ -1,11 +1,13 @@
 import { researchSpotlight } from "@/lib/data";
 import ScanLine from "./ScanLine";
+import ScrollReveal from "./ScrollReveal";
 
 export default function ResearchSpotlight() {
   return (
     <section id="research" className="relative border-t py-28" style={{ borderColor: "var(--border)" }}>
       <ScanLine targetId="research" />
-      <div className="container-px">
+      <ScrollReveal width="100%">
+        <div className="container-px">
         <span
           className="font-mono-label text-xs uppercase"
           style={{ color: "var(--accent)" }}
@@ -109,6 +111,7 @@ export default function ResearchSpotlight() {
           </div>
         </div>
       </div>
+      </ScrollReveal>
     </section>
   );
 }

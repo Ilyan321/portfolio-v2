@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { projects } from "@/lib/data";
+import ScrollReveal from "./ScrollReveal";
 
 export default function Projects() {
   // Allow expanding rows inline (single or multiple)
@@ -27,7 +28,8 @@ export default function Projects() {
         backgroundColor: "var(--bg)",
       }}
     >
-      <div className="container-px">
+      <ScrollReveal width="100%">
+        <div className="container-px">
         {/* Section Eyebrow Line */}
         <div className="flex items-center gap-3">
           <span
@@ -226,6 +228,7 @@ export default function Projects() {
           </div>
         )}
       </div>
+      </ScrollReveal>
     </section>
   );
 }

@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { certificates } from "@/lib/data";
+import ScrollReveal from "./ScrollReveal";
 
 export default function Certificates() {
   const [showAll, setShowAll] = useState(false);
@@ -16,7 +17,8 @@ export default function Certificates() {
         backgroundColor: "var(--bg)",
       }}
     >
-      <div className="container-px">
+      <ScrollReveal width="100%">
+        <div className="container-px">
         {/* Section Eyebrow Line */}
         <div className="flex items-center gap-3 mb-8">
           <span
@@ -129,6 +131,7 @@ export default function Certificates() {
           Verified industry credentials across Cybersecurity, Generative AI, LLM Orchestration, and Prompt Engineering.
         </p>
       </div>
+      </ScrollReveal>
     </section>
   );
 }
