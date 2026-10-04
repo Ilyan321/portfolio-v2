@@ -1,49 +1,80 @@
-import { experience } from "@/lib/data";
-import ScanLine from "./ScanLine";
+"use client";
 
 export default function Experience() {
+  const experiences = [
+    {
+      title: "AI Intern, FlyRank AI",
+      meta: "Ongoing · Remote",
+    },
+    {
+      title: "Python Developer Intern, IntelliVerse",
+      meta: "GenAI & NLP Pipelines",
+    },
+  ];
+
   return (
-    <section id="experience" className="relative border-t py-28" style={{ borderColor: "var(--border)" }}>
-      <ScanLine targetId="experience" />
-
+    <section
+      id="experience"
+      className="relative border-t py-24 md:py-32"
+      style={{
+        borderColor: "var(--border)",
+        backgroundColor: "var(--bg)",
+      }}
+    >
       <div className="container-px">
-        <div className="max-w-2xl">
-          <span className="font-mono-label text-xs uppercase" style={{ color: "var(--accent)" }}>
-            04 // Professional History
-          </span>
-          <h2
-            className="font-display mt-3 text-3xl font-medium tracking-tight md:text-4xl"
-            style={{ color: "var(--ink)" }}
+        {/* Section Eyebrow Line */}
+        <div className="flex items-center gap-3 mb-8">
+          <span
+            className="font-mono-label text-xs uppercase tracking-widest"
+            style={{ color: "var(--accent)" }}
           >
-            Internships & Engineering Experience
-          </h2>
+            03 // Experience
+          </span>
+          <div
+            className="h-[1px] flex-1"
+            style={{ backgroundColor: "var(--border)" }}
+          />
         </div>
 
-        <div className="mt-12 space-y-4">
-          {experience.map((exp) => (
-            <div
-              key={`${exp.company}-${exp.period}`}
-              className="grid grid-cols-1 gap-4 rounded-sm border p-6 transition-all duration-300 hover:border-accent md:grid-cols-12 md:items-start"
-              style={{ borderColor: "var(--border)", backgroundColor: "var(--panel)" }}
+        {/* Section Header */}
+        <h2
+          className="font-display mb-12 text-3xl font-medium md:text-4xl"
+          style={{ color: "var(--ink)" }}
+        >
+          Experience
+        </h2>
+
+        {/* Minimalist Editorial List with Left Hairline Rail */}
+        <ul className="max-w-4xl space-y-6">
+          {experiences.map((exp) => (
+            <li
+              key={exp.title}
+              className="flex flex-col gap-1 border-l-2 pl-5 sm:flex-row sm:items-baseline sm:justify-between transition-colors hover:border-accent"
+              style={{ borderColor: "var(--border)" }}
             >
-              <div className="md:col-span-4">
-                <div className="font-display text-lg font-semibold" style={{ color: "var(--ink)" }}>
-                  {exp.role}
-                </div>
-                <div className="text-sm font-medium" style={{ color: "var(--accent)" }}>
-                  {exp.company}
-                </div>
-                <div className="font-mono-label mt-1 text-xs" style={{ color: "var(--muted)" }}>
-                  {exp.period} · {exp.location}
-                </div>
-              </div>
-
-              <div className="text-sm leading-relaxed md:col-span-8" style={{ color: "var(--muted)" }}>
-                {exp.description}
-              </div>
-            </div>
+              <span
+                className="font-mono-label text-sm font-medium"
+                style={{ color: "var(--ink)" }}
+              >
+                {exp.title}
+              </span>
+              <span
+                className="font-mono-label text-xs uppercase tracking-wider"
+                style={{ color: "var(--muted)" }}
+              >
+                {exp.meta}
+              </span>
+            </li>
           ))}
-        </div>
+        </ul>
+
+        {/* Bottom Monospace Annotation */}
+        <p
+          className="font-mono-label mt-10 max-w-2xl text-xs uppercase tracking-wider"
+          style={{ color: "var(--muted)" }}
+        >
+          Specialized in autonomous knowledge engineering, LLM orchestration, and real-time inference pipelines.
+        </p>
       </div>
     </section>
   );

@@ -1,68 +1,133 @@
+"use client";
+
+import { useState } from "react";
 import { certificates } from "@/lib/data";
-import ScanLine from "./ScanLine";
-import { Award, CheckCircle2 } from "./Icons";
 
 export default function Certificates() {
+  const [showAll, setShowAll] = useState(false);
+  const displayedCerts = showAll ? certificates : certificates.slice(0, 4);
+
   return (
-    <section id="certificates" className="relative border-t py-28" style={{ borderColor: "var(--border)" }}>
-      <ScanLine targetId="certificates" />
-
+    <section
+      id="certificates"
+      className="relative border-t py-24 md:py-32"
+      style={{
+        borderColor: "var(--border)",
+        backgroundColor: "var(--bg)",
+      }}
+    >
       <div className="container-px">
-        <div className="max-w-2xl">
-          <span className="font-mono-label text-xs uppercase" style={{ color: "var(--accent)" }}>
-            05 // Verification & Credentials
-          </span>
-          <h2
-            className="font-display mt-3 text-3xl font-medium tracking-tight md:text-4xl"
-            style={{ color: "var(--ink)" }}
+        {/* Section Eyebrow Line */}
+        <div className="flex items-center gap-3 mb-8">
+          <span
+            className="font-mono-label text-xs uppercase tracking-widest"
+            style={{ color: "var(--accent)" }}
           >
-            Official Industry Certifications
-          </h2>
-          <p className="mt-3 text-sm leading-relaxed" style={{ color: "var(--muted)" }}>
-            Verified professional credentials in Cybersecurity, Generative AI engineering, Prompt Optimization, and Agile frameworks.
-          </p>
+            04 // Certifications
+          </span>
+          <div
+            className="h-[1px] flex-1"
+            style={{ backgroundColor: "var(--border)" }}
+          />
         </div>
 
-        <div className="mt-12 grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4">
-          {certificates.map((cert) => (
-            <div
+        {/* Section Header */}
+        <h2
+          className="font-display mb-12 text-3xl font-medium md:text-4xl"
+          style={{ color: "var(--ink)" }}
+        >
+          Certifications
+        </h2>
+
+        {/* Minimalist Editorial List with Left Hairline Rail (No Block/Card Container) */}
+        <ul className="max-w-4xl space-y-6">
+          {displayedCerts.map((cert) => (
+            <li
               key={cert.title}
-              className="flex flex-col justify-between rounded-sm border p-6 transition-all duration-300 hover:border-accent hover:-translate-y-1"
-              style={{ borderColor: "var(--border)", backgroundColor: "var(--panel)" }}
+              className="group flex flex-col gap-2 border-l-2 pl-5 sm:flex-row sm:items-baseline sm:justify-between transition-colors hover:border-accent"
+              style={{ borderColor: "var(--border)" }}
             >
-              <div>
-                <div className="flex items-center justify-between">
-                  <span className="font-mono-label text-[10px] uppercase tracking-wider" style={{ color: "var(--accent)" }}>
-                    {cert.tag}
+              <div className="space-y-1">
+                <div className="flex items-center gap-2.5 flex-wrap">
+                  <span
+                    className="font-mono-label text-sm font-medium transition-colors group-hover:text-accent"
+                    style={{ color: "var(--ink)" }}
+                  >
+                    {cert.title}
                   </span>
-                  <Award className="h-4 w-4" style={{ color: "var(--accent)" }} />
+                  {cert.tag && (
+                    <span
+                      className="font-mono-label text-[10px] uppercase tracking-wider px-1.5 py-0.5 rounded border"
+                      style={{
+                        borderColor: "var(--border)",
+                        color: "var(--muted)",
+                        backgroundColor: "var(--panel)",
+                      }}
+                    >
+                      {cert.tag}
+                    </span>
+                  )}
                 </div>
-
-                <h3 className="font-display mt-3 text-base font-semibold" style={{ color: "var(--ink)" }}>
-                  {cert.title}
-                </h3>
-                <div className="mt-1 text-xs" style={{ color: "var(--muted)" }}>
-                  {cert.issuer} · {cert.date}
-                </div>
-
-                <div className="mt-4 space-y-1.5 border-t pt-3" style={{ borderColor: "var(--border)" }}>
-                  {cert.skills.map((skill) => (
-                    <div key={skill} className="flex items-center gap-1.5 font-mono-label text-[11px]" style={{ color: "var(--ink)" }}>
-                      <CheckCircle2 className="h-3 w-3" style={{ color: "var(--accent)" }} />
-                      <span>{skill}</span>
-                    </div>
-                  ))}
+                <div
+                  className="font-mono-label text-xs"
+                  style={{ color: "var(--muted)" }}
+                >
+                  {cert.issuer} {cert.credentialId ? `· ID: ${cert.credentialId}` : ""}
                 </div>
               </div>
 
-              <div className="mt-6 border-t pt-3" style={{ borderColor: "var(--border)" }}>
-                <span className="font-mono-label text-[10px]" style={{ color: "var(--muted)" }}>
-                  ID: {cert.credentialId}
+              {/* Date & Document Link */}
+              <div className="flex items-center gap-4 shrink-0 sm:flex-col sm:items-end sm:gap-1.5">
+                <span
+                  className="font-mono-label text-xs uppercase tracking-wider"
+                  style={{ color: "var(--muted)" }}
+                >
+                  {cert.date}
                 </span>
+                {cert.file && (
+                  <a
+                    href={cert.file}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="font-mono-label text-xs underline underline-offset-4 transition-colors hover:text-ink inline-flex items-center gap-1"
+                    style={{ color: "var(--accent)" }}
+                    title={`View / Download ${cert.title}`}
+                  >
+                    {cert.file.endsWith(".pdf") ? "PDF" : "Credential"} ↗
+                  </a>
+                )}
               </div>
-            </div>
+            </li>
           ))}
-        </div>
+        </ul>
+
+        {/* View All / Collapse Toggle */}
+        {certificates.length > 4 && (
+          <div className="mt-8">
+            <button
+              type="button"
+              onClick={() => setShowAll(!showAll)}
+              className="font-mono-label inline-flex items-center gap-2 rounded border px-4 py-2 text-xs uppercase tracking-wider transition-colors hover:border-accent hover:text-ink cursor-pointer"
+              style={{
+                borderColor: "var(--border)",
+                color: "var(--accent)",
+                backgroundColor: "transparent",
+              }}
+            >
+              {showAll
+                ? `− Collapse to Top 4`
+                : `+ View All Certifications (${certificates.length})`}
+            </button>
+          </div>
+        )}
+
+        {/* Bottom Monospace Annotation */}
+        <p
+          className="font-mono-label mt-12 max-w-2xl text-xs uppercase tracking-wider"
+          style={{ color: "var(--muted)" }}
+        >
+          Verified industry credentials across Cybersecurity, Generative AI, LLM Orchestration, and Prompt Engineering.
+        </p>
       </div>
     </section>
   );

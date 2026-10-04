@@ -19,40 +19,30 @@ export const site = {
 export const stats = [
   { value: "99.05%", label: "Benchmark Accuracy" },
   { value: "< 50ms", label: "Inference Latency" },
-  { value: "4+", label: "Software Internships" },
+  { value: "2", label: "Industry AI Roles" },
   { value: "18+", label: "Curated Projects & Models" },
 ];
 
 export const techStack = [
   {
+    group: "Core Languages",
+    items: ["Python", "C++", "TypeScript", "JavaScript", "SQL", "C", "HTML/CSS"],
+  },
+  {
+    group: "Web & Frameworks",
+    items: ["React", "Next.js 15", "Streamlit", "Tailwind CSS", "REST APIs", "Node.js"],
+  },
+  {
     group: "AI & Machine Learning",
-    items: [
-      "PyTorch",
-      "LLaMA 3 / 3.3",
-      "LoRA / PEFT",
-      "Unsloth",
-      "Hugging Face Transformers",
-      "FAISS (Vector RAG)",
-      "DistilBERT",
-      "LangChain",
-      "Groq API",
-    ],
+    items: ["LoRA / QLoRA", "FAISS RAG", "LangChain", "PyTorch", "Hugging Face", "Unsloth", "Pandas", "Altair"],
   },
   {
-    group: "Programming Languages",
-    items: ["Python", "C++ (OOP/DSA)", "TypeScript", "JavaScript (ES6+)", "SQL"],
+    group: "Backend & Systems",
+    items: ["FastAPI", "Flask", "C++ Systems / OOP", "Python AST Safety", "Docker", "Linux / Bash"],
   },
   {
-    group: "Frontend & UI",
-    items: ["Next.js 15", "React 19 / 18", "Tailwind CSS", "Framer Motion", "GSAP", "Three.js / Canvas"],
-  },
-  {
-    group: "Backend, Cloud & DB",
-    items: ["FastAPI", "Flask", "Supabase (PostgreSQL + RLS)", "Streamlit", "Vercel", "Netlify Edge Functions", "Docker"],
-  },
-  {
-    group: "Tooling & Environments",
-    items: ["Git & GitHub", "Linux / Bash", "Google Colab", "Kaggle Dual-GPU", "VS Code"],
+    group: "Databases & Cloud",
+    items: ["PostgreSQL", "Supabase", "Git & GitHub", "Vercel", "Hugging Face Spaces"],
   },
 ];
 
@@ -228,36 +218,24 @@ export const projects: Project[] = [
 
 export const experience = [
   {
+    role: "AI Intern",
+    company: "FlyRank AI",
+    period: "Jun 2026 – Present",
+    location: "Remote",
+    current: true,
+    description:
+      "Working on General AI fluency, knowledge engineering, and software construction pipelines for organic growth automation.",
+    skills: ["GenAI", "Knowledge Engineering", "Data Science", "Python", "Software Construction"],
+  },
+  {
     role: "Python Developer Intern",
     company: "IntelliVerse",
     period: "Mar 2026 – May 2026",
     location: "Remote",
+    current: false,
     description:
       "Engineered Python-based Generative AI workflows, LLM agent orchestration, and asynchronous backend endpoints for real-time model inference pipelines.",
-  },
-  {
-    role: "Software Engineer Intern (C++)",
-    company: "Arch Technologies",
-    period: "Jan 2026 – Feb 2026",
-    location: "Remote / Nawabshah",
-    description:
-      "Applied Object-Oriented Programming (OOP) and algorithmic optimization in C++ focusing on memory management, array manipulation, and high-performance system logic.",
-  },
-  {
-    role: "Software Engineer Intern",
-    company: "Coretech Innovations",
-    period: "Dec 2025 – Jan 2026",
-    location: "Nawabshah, Pakistan",
-    description:
-      "Developed responsive frontend interfaces, performed modular code refactoring, and implemented core web application features in an agile team.",
-  },
-  {
-    role: "Software Engineer Intern",
-    company: "CodeAlpha",
-    period: "Dec 2025 – Dec 2025",
-    location: "Remote",
-    description:
-      "Executed full-stack engineering tasks, adhered to strict code quality standards, and delivered sprint deliverables with rapid turnaround.",
+    skills: ["Python", "LLM Orchestration", "FastAPI", "Real-Time Inference"],
   },
 ];
 
@@ -267,7 +245,7 @@ export const education = [
     degree: "Bachelor of Engineering (BE) in Computer System Engineering",
     period: "Oct 2024 – Oct 2028 (Expected)",
     location: "Nawabshah, Sindh, Pakistan",
-    details: "2nd Year Engineering Student · Aggregate CGPA: 3.10 / 4.00 (77.50%)",
+    details: "2nd Year Engineering Student · 4th Semester GPA: 3.50",
   },
   {
     institution: "IBA Public School Larkana",
@@ -280,13 +258,29 @@ export const education = [
 
 export const certificates = [
   {
-    title: "Google Cybersecurity Professional Certificate",
-    issuer: "Google / Coursera",
-    date: "2025 – 2026",
-    credentialId: "GCC-SEC-892401",
-    tag: "Security & Systems",
-    skills: ["Linux OS", "Python Automation", "SIEM / Splunk", "Network Security", "Wireshark", "NIST Framework"],
-    image: "/certificates/cybersecurity.png",
+    title: "FlyRank AI Fluency Certificate",
+    issuer: "FlyRank AI",
+    date: "2026",
+    credentialId: "FR-AIF-2026",
+    tag: "Artificial Intelligence",
+    skills: ["General AI Fluency", "Knowledge Engineering", "LLM Workflows", "Data Science"],
+    file: "/certificates/ai-fluency.pdf",
+  },
+  {
+    title: "Anthropic Claude Code in Action",
+    issuer: "Anthropic",
+    date: "2025",
+    tag: "AI Engineering",
+    skills: ["Claude Code", "Agentic Workflows", "Tool Use", "Automated Coding"],
+    file: "/certificates/claude-code-in-action.pdf",
+  },
+  {
+    title: "Anthropic Claude 101",
+    issuer: "Anthropic",
+    date: "2025",
+    tag: "AI Architecture",
+    skills: ["Claude Architecture", "Context Windows", "System Prompts", "API Integration"],
+    file: "/certificates/claude-code-101.pdf",
   },
   {
     title: "Google AI Essentials",
@@ -295,7 +289,7 @@ export const certificates = [
     credentialId: "GCC-AI-104928",
     tag: "Artificial Intelligence",
     skills: ["Generative AI", "LLM Workflow Design", "Ethical AI", "Model Evaluation", "Productivity AI"],
-    image: "/certificates/ai-essentials.png",
+    file: "/certificates/ai-essentials.png",
   },
   {
     title: "Google Prompting Essentials",
@@ -304,7 +298,16 @@ export const certificates = [
     credentialId: "GCC-PR-902381",
     tag: "Prompt Engineering",
     skills: ["Prompt Engineering", "Few-Shot Reasoning", "Context Optimization", "Prompt Chaining"],
-    image: "/certificates/prompting-essentials.png",
+    file: "/certificates/prompting-essentials.png",
+  },
+  {
+    title: "Google Cybersecurity Professional Certificate",
+    issuer: "Google / Coursera",
+    date: "2025 – 2026",
+    credentialId: "GCC-SEC-892401",
+    tag: "Security & Systems",
+    skills: ["Linux OS", "Python Automation", "SIEM / Splunk", "Network Security", "Wireshark", "NIST Framework"],
+    file: "/certificates/cybersecurity.png",
   },
   {
     title: "Google Agile Essentials",
@@ -313,6 +316,6 @@ export const certificates = [
     credentialId: "GCC-AG-2025",
     tag: "Engineering Methodology",
     skills: ["Agile Project Management", "Scrum Framework", "Sprint Planning", "Continuous Delivery"],
-    image: "/certificates/agile-essentials.png",
+    file: "/certificates/agile-essentials.png",
   },
 ];
