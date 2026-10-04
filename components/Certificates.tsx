@@ -1,9 +1,6 @@
-"use client";
-
-import { motion } from "framer-motion";
 import { certificates } from "@/lib/data";
 import ScanLine from "./ScanLine";
-import { Award, CheckCircle2 } from "lucide-react";
+import { Award, CheckCircle2 } from "./Icons";
 
 export default function Certificates() {
   return (
@@ -27,14 +24,10 @@ export default function Certificates() {
         </div>
 
         <div className="mt-12 grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4">
-          {certificates.map((cert, index) => (
-            <motion.div
+          {certificates.map((cert) => (
+            <div
               key={cert.title}
-              initial={{ opacity: 0, y: 12 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true, amount: 0.15 }}
-              transition={{ delay: index * 0.08, duration: 0.4 }}
-              className="flex flex-col justify-between rounded-sm border p-6"
+              className="flex flex-col justify-between rounded-sm border p-6 transition-all duration-300 hover:border-accent hover:-translate-y-1"
               style={{ borderColor: "var(--border)", backgroundColor: "var(--panel)" }}
             >
               <div>
@@ -67,7 +60,7 @@ export default function Certificates() {
                   ID: {cert.credentialId}
                 </span>
               </div>
-            </motion.div>
+            </div>
           ))}
         </div>
       </div>

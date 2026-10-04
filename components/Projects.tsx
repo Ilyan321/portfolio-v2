@@ -1,10 +1,9 @@
 "use client";
 
 import { useState } from "react";
-import { motion } from "framer-motion";
 import { projects } from "@/lib/data";
 import ScanLine from "./ScanLine";
-import { ExternalLink, Github, Sparkles } from "lucide-react";
+import { ExternalLink, Github, Sparkles } from "./Icons";
 
 export default function Projects() {
   const [filter, setFilter] = useState<"all" | "flagship">("all");
@@ -36,8 +35,8 @@ export default function Projects() {
           <div className="flex items-center gap-2">
             <button
               onClick={() => setFilter("all")}
-              className={`chip rounded-sm border px-3 py-1.5 font-mono-label text-xs uppercase tracking-wider ${
-                filter === "all" ? "font-bold" : "opacity-70"
+              className={`chip rounded-sm border px-3 py-1.5 font-mono-label text-xs uppercase tracking-wider transition-all ${
+                filter === "all" ? "font-bold shadow-sm" : "opacity-70"
               }`}
               style={{
                 borderColor: "var(--border)",
@@ -49,8 +48,8 @@ export default function Projects() {
             </button>
             <button
               onClick={() => setFilter("flagship")}
-              className={`chip rounded-sm border px-3 py-1.5 font-mono-label text-xs uppercase tracking-wider ${
-                filter === "flagship" ? "font-bold" : "opacity-70"
+              className={`chip rounded-sm border px-3 py-1.5 font-mono-label text-xs uppercase tracking-wider transition-all ${
+                filter === "flagship" ? "font-bold shadow-sm" : "opacity-70"
               }`}
               style={{
                 borderColor: "var(--border)",
@@ -65,14 +64,10 @@ export default function Projects() {
 
         {/* Projects Grid */}
         <div className="mt-12 grid grid-cols-1 gap-6 md:grid-cols-2">
-          {filteredProjects.map((project, index) => (
-            <motion.article
+          {filteredProjects.map((project) => (
+            <article
               key={project.slug}
-              initial={{ opacity: 0, y: 16 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true, amount: 0.15 }}
-              transition={{ delay: index * 0.05, duration: 0.4 }}
-              className={`group relative flex flex-col justify-between rounded-sm border p-6 transition-all hover:border-accent ${
+              className={`group relative flex flex-col justify-between rounded-sm border p-6 transition-all duration-300 hover:border-accent hover:-translate-y-1 ${
                 project.flagship ? "md:p-8" : ""
               }`}
               style={{
@@ -137,7 +132,7 @@ export default function Projects() {
                   ))}
                 </div>
               </div>
-            </motion.article>
+            </article>
           ))}
         </div>
       </div>

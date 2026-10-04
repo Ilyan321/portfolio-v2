@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { site } from "@/lib/data";
 import ScanLine from "./ScanLine";
-import { Mail, MessageSquare, Linkedin, Github, Send, CheckCircle } from "lucide-react";
+import { Mail, MessageSquare, Linkedin, Github, Send, CheckCircle } from "./Icons";
 
 export default function Contact() {
   const [submitted, setSubmitted] = useState(false);
@@ -16,7 +16,6 @@ export default function Contact() {
     const formData = new FormData(form);
 
     try {
-      // Connect to existing Google Apps Script webhook
       await fetch(
         "https://script.google.com/macros/s/AKfycbw0pvi3omFSFXjAYEM9POUHnbq0ChZQvG2Z7W4IyzilYK6wB3jNDdDFiJ1RJgIjwz8WBQ/exec",
         {
@@ -62,7 +61,7 @@ export default function Contact() {
                 className="chip flex items-center gap-3 rounded-sm border p-4 font-mono-label text-xs"
                 style={{ borderColor: "var(--border)", backgroundColor: "var(--panel)", color: "var(--ink)" }}
               >
-                <Mail className="h-4 w-4" style={{ color: "var(--accent)" }} />
+                <Mail className="h-4 w-4" />
                 <span>{site.email}</span>
               </a>
 
@@ -73,7 +72,7 @@ export default function Contact() {
                 className="chip flex items-center gap-3 rounded-sm border p-4 font-mono-label text-xs"
                 style={{ borderColor: "var(--border)", backgroundColor: "var(--panel)", color: "var(--ink)" }}
               >
-                <MessageSquare className="h-4 w-4" style={{ color: "var(--accent)" }} />
+                <MessageSquare className="h-4 w-4" />
                 <span>WhatsApp: {site.phone}</span>
               </a>
 

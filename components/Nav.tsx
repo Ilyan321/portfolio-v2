@@ -2,7 +2,6 @@
 
 import { site } from "@/lib/data";
 import ThemeToggle from "./ThemeToggle";
-import { Terminal } from "lucide-react";
 
 const navItems = [
   { label: "About", href: "#about" },

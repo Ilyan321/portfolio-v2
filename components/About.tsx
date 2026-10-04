@@ -1,6 +1,3 @@
-"use client";
-
-import { motion } from "framer-motion";
 import { site, techStack, education } from "@/lib/data";
 import ScanLine from "./ScanLine";
 
@@ -10,13 +7,7 @@ export default function About() {
       <ScanLine targetId="about" />
 
       <div className="container-px">
-        <motion.div
-          initial={{ opacity: 0, y: 16 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true, amount: 0.2 }}
-          transition={{ duration: 0.5 }}
-          className="grid grid-cols-1 gap-12 lg:grid-cols-12"
-        >
+        <div className="grid grid-cols-1 gap-12 lg:grid-cols-12">
           {/* Left bio */}
           <div className="lg:col-span-5">
             <span className="font-mono-label text-xs uppercase" style={{ color: "var(--accent)" }}>
@@ -43,7 +34,7 @@ export default function About() {
               </span>
               <div className="mt-3 space-y-4">
                 {education.map((edu) => (
-                  <div key={edu.degree} className="rounded-sm border p-4" style={{ borderColor: "var(--border)", backgroundColor: "var(--panel)" }}>
+                  <div key={edu.degree} className="rounded-sm border p-4 transition-all hover:border-accent" style={{ borderColor: "var(--border)", backgroundColor: "var(--panel)" }}>
                     <div className="font-display text-sm font-semibold" style={{ color: "var(--ink)" }}>
                       {edu.degree}
                     </div>
@@ -90,7 +81,7 @@ export default function About() {
               ))}
             </div>
           </div>
-        </motion.div>
+        </div>
       </div>
     </section>
   );

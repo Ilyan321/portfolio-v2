@@ -1,6 +1,3 @@
-"use client";
-
-import { motion } from "framer-motion";
 import { experience } from "@/lib/data";
 import ScanLine from "./ScanLine";
 
@@ -23,14 +20,10 @@ export default function Experience() {
         </div>
 
         <div className="mt-12 space-y-4">
-          {experience.map((exp, index) => (
-            <motion.div
+          {experience.map((exp) => (
+            <div
               key={`${exp.company}-${exp.period}`}
-              initial={{ opacity: 0, y: 12 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true, amount: 0.2 }}
-              transition={{ delay: index * 0.08, duration: 0.4 }}
-              className="grid grid-cols-1 gap-4 rounded-sm border p-6 md:grid-cols-12 md:items-start"
+              className="grid grid-cols-1 gap-4 rounded-sm border p-6 transition-all duration-300 hover:border-accent md:grid-cols-12 md:items-start"
               style={{ borderColor: "var(--border)", backgroundColor: "var(--panel)" }}
             >
               <div className="md:col-span-4">
@@ -48,7 +41,7 @@ export default function Experience() {
               <div className="text-sm leading-relaxed md:col-span-8" style={{ color: "var(--muted)" }}>
                 {exp.description}
               </div>
-            </motion.div>
+            </div>
           ))}
         </div>
       </div>

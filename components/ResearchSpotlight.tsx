@@ -1,6 +1,3 @@
-"use client";
-
-import { motion } from "framer-motion";
 import { researchSpotlight } from "@/lib/data";
 import ScanLine from "./ScanLine";
 
@@ -9,26 +6,19 @@ export default function ResearchSpotlight() {
     <section id="research" className="relative border-t py-28" style={{ borderColor: "var(--border)" }}>
       <ScanLine targetId="research" />
       <div className="container-px">
-        <motion.span
-          initial={{ opacity: 0 }}
-          whileInView={{ opacity: 1 }}
-          viewport={{ once: true }}
+        <span
           className="font-mono-label text-xs uppercase"
           style={{ color: "var(--accent)" }}
         >
           {researchSpotlight.eyebrow}
-        </motion.span>
+        </span>
 
-        <motion.h2
-          initial={{ opacity: 0, y: 16 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true, amount: 0.3 }}
-          transition={{ duration: 0.6 }}
+        <h2
           className="font-display mt-3 max-w-3xl text-3xl font-medium leading-tight md:text-4xl"
           style={{ color: "var(--ink)" }}
         >
           {researchSpotlight.title}
-        </motion.h2>
+        </h2>
 
         <p
           className="mt-5 max-w-2xl text-base leading-relaxed md:text-lg"
@@ -67,7 +57,7 @@ export default function ResearchSpotlight() {
             href={researchSpotlight.link}
             target="_blank"
             rel="noopener noreferrer"
-            className="rounded-sm px-6 py-3 font-mono-label text-xs font-semibold uppercase tracking-wider transition-transform hover:-translate-y-0.5"
+            className="rounded-sm px-6 py-3 font-mono-label text-xs font-semibold uppercase tracking-wider transition-transform hover:-translate-y-0.5 shadow-sm"
             style={{ backgroundColor: "var(--accent)", color: "var(--bg)" }}
           >
             View GitHub Repository

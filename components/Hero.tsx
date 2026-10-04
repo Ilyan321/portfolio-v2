@@ -1,7 +1,6 @@
 "use client";
 
 import dynamic from "next/dynamic";
-import { motion } from "framer-motion";
 import { site, stats } from "@/lib/data";
 import ScanLine from "./ScanLine";
 
@@ -23,11 +22,8 @@ export default function Hero() {
       <div className="container-px grid w-full grid-cols-1 items-center gap-12 pt-28 pb-16 md:grid-cols-2 md:pt-16">
         {/* left: text block */}
         <div className="max-w-xl">
-          <motion.div
-            initial={{ opacity: 0, y: -6 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.4 }}
-            className="font-mono-label mb-4 flex items-center gap-2 text-xs uppercase"
+          <div
+            className="font-mono-label mb-4 flex items-center gap-2 text-xs uppercase animate-fade-in"
             style={{ color: "var(--accent)" }}
           >
             <span className="relative flex h-2 w-2">
@@ -41,44 +37,33 @@ export default function Hero() {
               />
             </span>
             <span>Available for remote & full-time roles</span>
-          </motion.div>
+          </div>
 
-          <motion.h1
+          <h1
             className="font-display text-[clamp(2.25rem,5.5vw,4.25rem)] font-medium leading-[1.05] tracking-tight"
             style={{ color: "var(--ink)" }}
           >
             {headlineWords.map((word, i) => (
-              <motion.span
+              <span
                 key={`${word}-${i}`}
-                initial={{ opacity: 0, y: 16 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.3 + i * 0.05, duration: 0.5, ease: "easeOut" }}
-                className="mr-[0.28em] inline-block"
+                className="mr-[0.28em] inline-block transition-transform duration-300 hover:-translate-y-1"
               >
                 {word}
-              </motion.span>
+              </span>
             ))}
-          </motion.h1>
+          </h1>
 
-          <motion.p
-            initial={{ opacity: 0, y: 10 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.9, duration: 0.5 }}
+          <p
             className="font-mono-label mt-6 text-sm leading-relaxed"
             style={{ color: "var(--muted)" }}
           >
             {site.subline}
-          </motion.p>
+          </p>
 
-          <motion.div
-            initial={{ opacity: 0, y: 10 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 1.1, duration: 0.5 }}
-            className="mt-8 flex flex-wrap gap-4"
-          >
+          <div className="mt-8 flex flex-wrap gap-4">
             <a
               href="#projects"
-              className="rounded-sm px-6 py-3 font-mono-label text-xs font-semibold uppercase tracking-wider transition-transform hover:-translate-y-0.5"
+              className="rounded-sm px-6 py-3 font-mono-label text-xs font-semibold uppercase tracking-wider transition-transform duration-200 hover:-translate-y-0.5 shadow-sm"
               style={{ backgroundColor: "var(--accent)", color: "var(--bg)" }}
             >
               Explore Projects
@@ -87,17 +72,14 @@ export default function Hero() {
               href="/cv.pdf"
               target="_blank"
               rel="noopener noreferrer"
-              className="chip rounded-sm border px-6 py-3 font-mono-label text-xs font-semibold uppercase tracking-wider transition-transform hover:-translate-y-0.5"
+              className="chip rounded-sm border px-6 py-3 font-mono-label text-xs font-semibold uppercase tracking-wider transition-transform duration-200 hover:-translate-y-0.5"
               style={{ borderColor: "var(--border)", color: "var(--ink)", backgroundColor: "var(--panel)" }}
             >
               Download CV
             </a>
-          </motion.div>
+          </div>
 
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ delay: 1.3, duration: 0.6 }}
+          <div
             className="font-mono-label mt-12 grid grid-cols-2 gap-x-6 gap-y-3 border-t pt-6 text-xs uppercase"
             style={{ borderColor: "var(--border)", color: "var(--muted)" }}
           >
@@ -107,7 +89,7 @@ export default function Hero() {
                 <span style={{ color: "var(--ink)" }}>{s.label}</span>
               </div>
             ))}
-          </motion.div>
+          </div>
         </div>
 
         {/* right: interactive 3D scene, desktop only */}
