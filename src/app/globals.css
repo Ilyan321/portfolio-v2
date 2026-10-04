@@ -1,0 +1,92 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --bg: #DAF1DE;
+  --panel: color-mix(in srgb, #DAF1DE 92%, white 8%);
+  --border: #8EB69B;
+  --accent: #163832;
+  --ink: #051F20;
+  --muted: #235347;
+}
+
+.dark {
+  --bg: #051F20;
+  --panel: #0B2B26;
+  --border: #163832;
+  --accent: #8EB69B;
+  --ink: #DAF1DE;
+  --muted: rgba(142, 182, 155, 0.6);
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html {
+  scroll-behavior: auto;
+}
+
+body {
+  background-color: var(--bg);
+  color: var(--ink);
+  transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+::selection {
+  background: var(--accent);
+  color: var(--bg);
+}
+
+.container-px {
+  padding-left: clamp(1.25rem, 5vw, 5rem);
+  padding-right: clamp(1.25rem, 5vw, 5rem);
+}
+
+.hairline {
+  border-color: var(--border);
+}
+
+/* focus states — keyboard reachable, visible in both themes */
+a:focus-visible,
+button:focus-visible,
+input:focus-visible,
+textarea:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+  border-radius: 2px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+.scanline-glow {
+  box-shadow: 0 0 14px 2px var(--accent);
+}
+
+.font-mono-label {
+  font-family: var(--font-jetbrains-mono), monospace;
+  letter-spacing: 0.08em;
+}
+
+.chip {
+  transition: border-color 0.2s ease, background-color 0.2s ease, transform 0.2s ease;
+}
+
+.chip:hover {
+  border-color: var(--accent);
+  transform: translateY(-1px);
+}
+
+.field-input:focus {
+  border-color: var(--accent);
+}
