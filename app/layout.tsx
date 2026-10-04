@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { Space_Grotesk, Inter, JetBrains_Mono } from "next/font/google";
+import { GoogleAnalytics } from "@next/third-parties/google";
 import "./globals.css";
 import ThemeProvider from "@/components/ThemeProvider";
 import SmoothScroll from "@/components/SmoothScroll";
@@ -23,7 +24,7 @@ const jetbrainsMono = JetBrains_Mono({
   display: "swap",
 });
 
-const siteUrl = "https://ilyan-portfolio.netlify.app";
+const siteUrl = "https://www.ilyankhan.tech";
 
 export const metadata: Metadata = {
   metadataBase: new URL(siteUrl),
@@ -89,6 +90,7 @@ export default function RootLayout({
         <ThemeProvider>
           <SmoothScroll>{children}</SmoothScroll>
         </ThemeProvider>
+        <GoogleAnalytics gaId="G-SYC3BYGN7J" />
       </body>
     </html>
   );
