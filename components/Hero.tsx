@@ -4,10 +4,7 @@ import dynamic from "next/dynamic";
 import { site, stats } from "@/lib/data";
 import ScanLine from "./ScanLine";
 
-const Scene3D = dynamic(() => import("./Scene3D"), {
-  ssr: false,
-  loading: () => null,
-});
+
 
 const headlineWords = site.headline.split(" ");
 
@@ -92,10 +89,7 @@ export default function Hero() {
           </div>
         </div>
 
-        {/* right: interactive 3D scene, desktop only */}
-        <div className="relative hidden h-[460px] w-full items-center justify-center md:flex">
-          <Scene3D />
-        </div>
+
       </div>
     </section>
   );
