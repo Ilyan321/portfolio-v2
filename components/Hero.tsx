@@ -2,7 +2,9 @@
 
 import { stats } from "@/lib/data";
 import ScrollReveal from "./ScrollReveal";
-import HeroAnimation from "./HeroAnimation";
+import dynamic from "next/dynamic";
+
+const HeroAnimation = dynamic(() => import("./HeroAnimation"), { ssr: false });
 
 export default function Hero() {
   return (
