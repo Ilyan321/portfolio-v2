@@ -32,12 +32,12 @@
 }
 
 .light {
-  --bg: #FAFAFA;
+  --bg: #F4F7F5;
   --panel: #FFFFFF;
-  --border: #E5E7EB;
-  --accent: #111827;
-  --ink: #111827;
-  --muted: #6B7280;
+  --border: #D1E0D7;
+  --accent: #153832;
+  --ink: #051F20;
+  --muted: #4A6763;
 }
 
 * {
