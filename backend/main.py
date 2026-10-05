@@ -81,6 +81,6 @@ async def chat_endpoint(req: ChatRequest):
         
     return StreamingResponse(stream_groq(api_messages), media_type="text/plain")
 
-@app.get("/health")
+@app.api_route("/health", methods=["GET", "HEAD"])
 def health_check():
     return {"status": "sys_ok", "version": "IlyanOS v2.0.0 backend"}
