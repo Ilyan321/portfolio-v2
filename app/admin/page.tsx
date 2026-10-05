@@ -3,8 +3,18 @@ import { ProjectsAdmin } from "@/components/admin/ProjectsAdmin";
 import { CertsAdmin } from "@/components/admin/CertsAdmin";
 
 export default async function AdminPage() {
-  const { data: projects } = await supabaseAdmin.from("v2_projects").select("*").order("position", { ascending: true });
-  const { data: certs } = await supabaseAdmin.from("v2_certifications").select("*").order("position", { ascending: true });
+  let projects = [];
+  let certs = [];
+  try {
+    if (process.env.NEXT_PUBLIC_SUPABASE_URL && process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY) {
+      const { data: p } = await supabaseAdmin.from("v2_projects").select("*").order("position", { ascending: true });
+      const { data: c } = await supabaseAdmin.from("v2_certifications").select("*").order("position", { ascending: true });
+      if (p) projects = p;
+      if (c) certs = c;
+    }
+  } catch (error) {
+    console.error(error);
+  }
 
   return (
     <div className="space-y-12 py-8">
