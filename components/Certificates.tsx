@@ -50,7 +50,14 @@ export default function Certificates({ dbCerts }: { dbCerts?: any[] }) {
               No certificates yet.
             </div>
           ) : (
-            displayedCerts.map((cert, idx) => (
+            displayedCerts.map((cert, idx) => {
+              let displayIssuer = cert.issuer || "";
+              let credId = "";
+              if (displayIssuer.includes("|||")) {
+                [displayIssuer, credId] = displayIssuer.split("|||").map((s) => s.trim());
+              }
+
+              return (
               <div
                 key={cert.id || idx}
                 className="group flex flex-col sm:flex-row sm:items-center justify-between border-b py-6 sm:py-8 transition-colors hover:bg-white/[0.02]"
@@ -68,7 +75,7 @@ export default function Certificates({ dbCerts }: { dbCerts?: any[] }) {
                     className="font-mono-label text-xs uppercase tracking-wider"
                     style={{ color: "var(--muted)" }}
                   >
-                    {cert.issuer} {cert.credentialId && `// ID: ${cert.credentialId}`}
+                    {displayIssuer} {credId && `// ID: ${credId}`}
                   </div>
                 </div>
 
@@ -97,7 +104,8 @@ export default function Certificates({ dbCerts }: { dbCerts?: any[] }) {
                   )}
                 </div>
               </div>
-            ))
+            );
+            })
           )}
         </div>
 

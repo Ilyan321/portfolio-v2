@@ -14,10 +14,10 @@ export default function AdminLayout({ children }: { children: ReactNode }) {
           </div>
           <nav className="font-mono-label flex gap-6 text-[11px] uppercase tracking-wider">
             <Link href="/" className="transition-colors hover:text-white" style={{ color: "var(--muted)" }}>
-              [ Return to Root ]
+              Return to Root
             </Link>
             <Link href="/api/auth/logout" className="text-red-500 hover:text-red-400 transition-colors">
-              [ Terminate Session ]
+              Terminate Session
             </Link>
           </nav>
         </div>

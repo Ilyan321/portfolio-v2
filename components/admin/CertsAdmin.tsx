@@ -13,11 +13,12 @@ export function CertsAdmin({ initialCerts }: { initialCerts: any[] }) {
   
   const [newTitle, setNewTitle] = useState("");
   const [newIssuer, setNewIssuer] = useState("");
+  const [newCredentialId, setNewCredentialId] = useState("");
   const [newDate, setNewDate] = useState("");
   const [newLink, setNewLink] = useState("");
   
   const sensors = useSensors(
-    useSensor(PointerSensor),
+    useSensor(PointerSensor, { activationConstraint: { distance: 5 } }),
     useSensor(KeyboardSensor, { coordinateGetter: sortableKeyboardCoordinates })
   );
 
@@ -31,7 +32,6 @@ export function CertsAdmin({ initialCerts }: { initialCerts: any[] }) {
         
         const updates = newArray.map((item, index) => ({ id: item.id, position: index }));
         updateCertPositions(updates);
-        
         return newArray;
       });
     }
@@ -42,42 +42,60 @@ export function CertsAdmin({ initialCerts }: { initialCerts: any[] }) {
     setEditingId(null);
     setNewTitle("");
     setNewIssuer("");
+    setNewCredentialId("");
     setNewDate("");
     setNewLink("");
   }
 
   function startEditing(c: any) {
-    setIsAdding(true);
+    setIsAdding(false);
     setEditingId(c.id);
     setNewTitle(c.title);
-    setNewIssuer(c.issuer);
+    
+    // Parse issuer and credential ID if we used the ||| trick
+    let issuer = c.issuer || "";
+    let credId = "";
+    if (issuer.includes("|||")) {
+      [issuer, credId] = issuer.split("|||").map((s: string) => s.trim());
+    }
+    
+    setNewIssuer(issuer);
+    setNewCredentialId(credId);
     setNewDate(c.date);
     setNewLink(c.link || "");
   }
 
-  async function handleSave(e: React.FormEvent) {
+  function cancelEdit() {
+    setEditingId(null);
+    setIsAdding(false);
+  }
+
+  async function handleSave(e: React.FormEvent, id?: string) {
     e.preventDefault();
+    
+    // Combine issuer and credential ID
+    const combinedIssuer = newCredentialId ? `${newIssuer} ||| ${newCredentialId}` : newIssuer;
+    
     const data = { 
       title: newTitle, 
-      issuer: newIssuer, 
+      issuer: combinedIssuer, 
       date: newDate, 
       link: newLink
     };
 
-    if (editingId) {
-      const updatedCert = await updateCert(editingId, data);
+    if (id) {
+      const updatedCert = await updateCert(id, data);
       if (updatedCert) {
-        setCerts(certs.map(c => c.id === editingId ? updatedCert : c));
+        setCerts(certs.map(c => c.id === id ? updatedCert : c));
       }
+      setEditingId(null);
     } else {
       const newCert = await createCert({ ...data, position: certs.length });
       if (newCert) {
         setCerts([...certs, newCert]);
       }
+      setIsAdding(false);
     }
-
-    setIsAdding(false);
-    setEditingId(null);
   }
 
   async function handleDelete(id: string) {
@@ -87,66 +105,88 @@ export function CertsAdmin({ initialCerts }: { initialCerts: any[] }) {
     }
   }
 
+  const renderForm = (id?: string) => (
+    <form onSubmit={(e) => handleSave(e, id)} className="p-6 rounded-sm border space-y-4" style={{ borderColor: "var(--border)", backgroundColor: "var(--panel)" }}>
+      <div className="space-y-1">
+        <label className="font-mono-label text-[10px] uppercase tracking-widest" style={{ color: "var(--muted)" }}>Title</label>
+        <input type="text" required value={newTitle} onChange={e => setNewTitle(e.target.value)} className="w-full font-body text-sm rounded-sm border p-3 outline-none transition-all focus:border-emerald-500" style={{ backgroundColor: "var(--bg)", borderColor: "var(--border)", color: "var(--ink)" }} />
+      </div>
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        <div className="space-y-1">
+          <label className="font-mono-label text-[10px] uppercase tracking-widest" style={{ color: "var(--muted)" }}>Issuer</label>
+          <input type="text" required value={newIssuer} onChange={e => setNewIssuer(e.target.value)} className="w-full font-body text-sm rounded-sm border p-3 outline-none transition-all focus:border-emerald-500" style={{ backgroundColor: "var(--bg)", borderColor: "var(--border)", color: "var(--ink)" }} />
+        </div>
+        <div className="space-y-1">
+          <label className="font-mono-label text-[10px] uppercase tracking-widest" style={{ color: "var(--muted)" }}>Credential ID (Optional)</label>
+          <input type="text" value={newCredentialId} onChange={e => setNewCredentialId(e.target.value)} placeholder="e.g. GCC-12345" className="w-full font-body text-sm rounded-sm border p-3 outline-none transition-all focus:border-emerald-500" style={{ backgroundColor: "var(--bg)", borderColor: "var(--border)", color: "var(--ink)" }} />
+        </div>
+      </div>
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        <div className="space-y-1">
+          <label className="font-mono-label text-[10px] uppercase tracking-widest" style={{ color: "var(--muted)" }}>Date / Year</label>
+          <input type="text" required value={newDate} onChange={e => setNewDate(e.target.value)} placeholder="e.g. 2026" className="w-full font-body text-sm rounded-sm border p-3 outline-none transition-all focus:border-emerald-500" style={{ backgroundColor: "var(--bg)", borderColor: "var(--border)", color: "var(--ink)" }} />
+        </div>
+        <div className="space-y-1">
+          <label className="font-mono-label text-[10px] uppercase tracking-widest" style={{ color: "var(--muted)" }}>Credential URL / PDF Link</label>
+          <input type="text" value={newLink} onChange={e => setNewLink(e.target.value)} className="w-full font-body text-sm rounded-sm border p-3 outline-none transition-all focus:border-emerald-500" style={{ backgroundColor: "var(--bg)", borderColor: "var(--border)", color: "var(--ink)" }} />
+        </div>
+      </div>
+      
+      <div className="flex gap-4 pt-4 border-t" style={{ borderColor: "var(--border)" }}>
+        <button type="submit" className="font-mono-label text-xs uppercase tracking-widest px-6 py-3 rounded-sm transition-colors cursor-pointer" style={{ backgroundColor: "var(--accent)", color: "var(--bg)" }}>
+          {id ? "Update Cert" : "Save Cert"}
+        </button>
+        <button type="button" onClick={cancelEdit} className="font-mono-label text-xs uppercase tracking-widest px-6 py-3 border rounded-sm transition-colors cursor-pointer" style={{ borderColor: "var(--border)", color: "var(--muted)" }}>Cancel</button>
+      </div>
+    </form>
+  );
+
   return (
     <div className="font-body">
       <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
         <SortableContext items={certs} strategy={verticalListSortingStrategy}>
           <div className="space-y-3 mb-6">
-            {certs.map((cert) => (
-              <SortableItem key={cert.id} id={cert.id}>
-                <div 
-                  className="flex flex-col sm:flex-row justify-between items-start sm:items-center p-5 rounded-sm border"
-                  style={{ borderColor: "var(--border)", backgroundColor: "var(--panel)" }}
-                >
-                  <div className="flex-1 min-w-0 pr-4">
-                    <h3 className="font-display text-lg truncate" style={{ color: "var(--ink)" }}>{cert.title}</h3>
-                    <p className="font-mono-label text-xs tracking-wider uppercase mt-1" style={{ color: "var(--muted)" }}>
-                      {cert.issuer} • {cert.date}
-                    </p>
-                  </div>
-                  <div className="mt-4 sm:mt-0 flex-shrink-0 flex gap-2">
-                    <button onClick={() => startEditing(cert)} className="font-mono-label text-xs uppercase tracking-wider px-4 py-2 border rounded-sm transition-colors cursor-pointer" style={{ borderColor: "var(--border)", color: "var(--ink)" }}>
-                      Edit
-                    </button>
-                    <button onClick={() => handleDelete(cert.id)} className="font-mono-label text-xs uppercase tracking-wider px-4 py-2 border rounded-sm text-red-500 border-red-500/30 hover:bg-red-500/10 transition-colors cursor-pointer">
-                      Delete
-                    </button>
-                  </div>
-                </div>
-              </SortableItem>
-            ))}
+            {certs.map((cert) => {
+              let displayIssuer = cert.issuer || "";
+              let credId = "";
+              if (displayIssuer.includes("|||")) {
+                [displayIssuer, credId] = displayIssuer.split("|||").map((s: string) => s.trim());
+              }
+
+              return (
+                <SortableItem key={cert.id} id={cert.id}>
+                  {editingId === cert.id ? (
+                    renderForm(cert.id)
+                  ) : (
+                    <div 
+                      className="flex flex-col sm:flex-row justify-between items-start sm:items-center p-5 rounded-sm border"
+                      style={{ borderColor: "var(--border)", backgroundColor: "var(--panel)" }}
+                    >
+                      <div className="flex-1 min-w-0 pr-4">
+                        <h3 className="font-display text-lg truncate" style={{ color: "var(--ink)" }}>{cert.title}</h3>
+                        <p className="font-mono-label text-xs tracking-wider uppercase mt-1" style={{ color: "var(--muted)" }}>
+                          {displayIssuer} {credId && `// ID: ${credId}`} • {cert.date}
+                        </p>
+                      </div>
+                      <div className="mt-4 sm:mt-0 flex-shrink-0 flex gap-2 self-start">
+                        <button onClick={() => startEditing(cert)} className="font-mono-label text-xs uppercase tracking-wider px-4 py-2 border rounded-sm transition-colors cursor-pointer hover:bg-white/[0.02]" style={{ borderColor: "var(--border)", color: "var(--ink)" }}>
+                          Edit
+                        </button>
+                        <button onClick={() => handleDelete(cert.id)} className="font-mono-label text-xs uppercase tracking-wider px-4 py-2 border rounded-sm text-red-500 border-red-500/30 hover:bg-red-500/10 transition-colors cursor-pointer">
+                          Delete
+                        </button>
+                      </div>
+                    </div>
+                  )}
+                </SortableItem>
+              );
+            })}
           </div>
         </SortableContext>
       </DndContext>
 
       {isAdding ? (
-        <form onSubmit={handleSave} className="p-6 rounded-sm border space-y-4" style={{ borderColor: "var(--border)", backgroundColor: "var(--panel)" }}>
-          <div className="space-y-1">
-            <label className="font-mono-label text-[10px] uppercase tracking-widest" style={{ color: "var(--muted)" }}>Title</label>
-            <input type="text" required value={newTitle} onChange={e => setNewTitle(e.target.value)} className="w-full font-body text-sm rounded-sm border p-3 outline-none transition-all focus:border-emerald-500" style={{ backgroundColor: "var(--bg)", borderColor: "var(--border)", color: "var(--ink)" }} />
-          </div>
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <div className="space-y-1">
-              <label className="font-mono-label text-[10px] uppercase tracking-widest" style={{ color: "var(--muted)" }}>Issuer</label>
-              <input type="text" required value={newIssuer} onChange={e => setNewIssuer(e.target.value)} className="w-full font-body text-sm rounded-sm border p-3 outline-none transition-all focus:border-emerald-500" style={{ backgroundColor: "var(--bg)", borderColor: "var(--border)", color: "var(--ink)" }} />
-            </div>
-            <div className="space-y-1">
-              <label className="font-mono-label text-[10px] uppercase tracking-widest" style={{ color: "var(--muted)" }}>Date / Year</label>
-              <input type="text" required value={newDate} onChange={e => setNewDate(e.target.value)} placeholder="e.g. 2026" className="w-full font-body text-sm rounded-sm border p-3 outline-none transition-all focus:border-emerald-500" style={{ backgroundColor: "var(--bg)", borderColor: "var(--border)", color: "var(--ink)" }} />
-            </div>
-          </div>
-          <div className="space-y-1">
-            <label className="font-mono-label text-[10px] uppercase tracking-widest" style={{ color: "var(--muted)" }}>URL / File Path</label>
-            <input type="text" value={newLink} onChange={e => setNewLink(e.target.value)} className="w-full font-body text-sm rounded-sm border p-3 outline-none transition-all focus:border-emerald-500" style={{ backgroundColor: "var(--bg)", borderColor: "var(--border)", color: "var(--ink)" }} />
-          </div>
-          
-          <div className="flex gap-4 pt-4 border-t" style={{ borderColor: "var(--border)" }}>
-            <button type="submit" className="font-mono-label text-xs uppercase tracking-widest px-6 py-3 rounded-sm transition-colors cursor-pointer" style={{ backgroundColor: "var(--accent)", color: "var(--bg)" }}>
-              {editingId ? "Update Cert" : "Save Cert"}
-            </button>
-            <button type="button" onClick={() => setIsAdding(false)} className="font-mono-label text-xs uppercase tracking-widest px-6 py-3 border rounded-sm transition-colors cursor-pointer" style={{ borderColor: "var(--border)", color: "var(--muted)" }}>Cancel</button>
-          </div>
-        </form>
+        renderForm()
       ) : (
         <button onClick={startAdding} className="w-full font-mono-label text-xs uppercase tracking-widest px-4 py-4 border border-dashed rounded-sm transition-colors cursor-pointer" style={{ borderColor: "var(--border)", color: "var(--muted)" }} onMouseOver={(e) => { e.currentTarget.style.borderColor="var(--accent)"; e.currentTarget.style.color="var(--accent)" }} onMouseOut={(e) => { e.currentTarget.style.borderColor="var(--border)"; e.currentTarget.style.color="var(--muted)" }}>
           + Add New Certification
