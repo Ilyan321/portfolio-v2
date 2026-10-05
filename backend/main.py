@@ -50,7 +50,7 @@ class ChatRequest(BaseModel):
 async def stream_groq(api_messages):
     try:
         completion = client.chat.completions.create(
-            model="llama-3.1-8b-instant",
+            model="openai/gpt-oss-20b",
             messages=api_messages,
             temperature=0.5,
             max_tokens=500,
