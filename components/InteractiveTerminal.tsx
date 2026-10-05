@@ -211,7 +211,6 @@ export default function InteractiveTerminal() {
     <div
       className="w-full h-[400px] lg:h-[500px] flex flex-col rounded-xl overflow-hidden shadow-2xl font-mono text-[13px] sm:text-sm"
       style={{ backgroundColor: "#0D1117", border: "1px solid #30363D" }}
-      onClick={() => inputRef.current?.focus()}
     >
       {/* Mac OS Window Header */}
       <div className="flex items-center px-4 py-3 bg-[#161B22] border-b border-[#30363D]">
@@ -228,7 +227,7 @@ export default function InteractiveTerminal() {
       {/* Terminal Body */}
       <div
         ref={scrollRef}
-        className="flex-1 overflow-y-auto p-4 space-y-3"
+        className="flex-1 overflow-y-auto p-4 space-y-3 min-h-0"
         style={{ color: "#E6EDF3", scrollbarWidth: "thin", scrollbarColor: "#30363D transparent" }}
       >
         {history.map((item) => (
