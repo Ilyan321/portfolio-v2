@@ -7,24 +7,21 @@ import Certificates from "@/components/Certificates";
 import Contact from "@/components/Contact";
 import Footer from "@/components/Footer";
 import { supabase } from "@/lib/supabase";
-import { projects as hardcodedProjects } from "@/lib/data";
 
 export default async function Home() {
-  let dbProjects = null;
-  let dbCerts = null;
+  let dbProjects = [];
+  let dbCerts = [];
 
   try {
     if (process.env.NEXT_PUBLIC_SUPABASE_URL && process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY) {
       const { data: p } = await supabase.from("v2_projects").select("*").order("position", { ascending: true });
       const { data: c } = await supabase.from("v2_certifications").select("*").order("position", { ascending: true });
-      dbProjects = p;
-      dbCerts = c;
+      if (p) dbProjects = p;
+      if (c) dbCerts = c;
     }
   } catch (error) {
     console.error("Supabase fetch error:", error);
   }
-
-  const activeProjects = (dbProjects && dbProjects.length > 0) ? dbProjects : hardcodedProjects;
 
   return (
     <div className="relative min-h-screen">
@@ -32,9 +29,9 @@ export default async function Home() {
       <main>
         <Hero />
         <About />
-        <Projects dbProjects={activeProjects} />
+        <Projects dbProjects={dbProjects} />
         <Experience />
-        <Certificates dbCerts={dbCerts || []} />
+        <Certificates dbCerts={dbCerts} />
         <Contact />
       </main>
       <Footer />

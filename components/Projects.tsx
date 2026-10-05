@@ -2,15 +2,11 @@
 
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { projects as hardcodedProjects } from "@/lib/data";
 import ScrollReveal from "./ScrollReveal";
 
-export default function Projects({ dbProjects }: { dbProjects?: any[] }) {
-  const activeProjects = dbProjects || hardcodedProjects;
-
-  // Allow expanding rows inline (single or multiple)
+export default function Projects({ dbProjects }: { dbProjects: any[] }) {
   const [expandedSlugs, setExpandedSlugs] = useState<string[]>([
-    activeProjects[0]?.id || activeProjects[0]?.slug || "", // First flagship open by default
+    dbProjects[0]?.id || "", 
   ]);
   const [showAll, setShowAll] = useState(false);
 
@@ -20,232 +16,119 @@ export default function Projects({ dbProjects }: { dbProjects?: any[] }) {
     );
   };
 
-  const displayedProjects = showAll ? projects : activeProjects.slice(0, 5);
+  const displayedProjects = showAll ? dbProjects : dbProjects.slice(0, 5);
 
   return (
-    <section
-      id="projects"
-      className="relative border-t py-24 md:py-32"
-      style={{
-        borderColor: "var(--border)",
-        backgroundColor: "var(--bg)",
-      }}
-    >
+    <section id="projects" className="relative py-24 md:py-32" style={{ backgroundColor: "var(--bg)" }}>
       <ScrollReveal width="100%">
         <div className="container-px">
-        {/* Section Eyebrow Line */}
-        <div className="flex items-center gap-3">
-          <span
-            className="font-mono-label text-xs uppercase tracking-widest"
-            style={{ color: "var(--accent)" }}
-          >
-            02 // Selected Projects
-          </span>
-          <div
-            className="h-[1px] flex-1"
-            style={{ backgroundColor: "var(--border)" }}
-          />
-        </div>
+          <div className="flex items-center gap-3 mb-8">
+            <span className="font-mono-label text-xs uppercase tracking-widest" style={{ color: "var(--accent)" }}>
+              02 // Selected Works
+            </span>
+            <div className="h-px flex-1" style={{ backgroundColor: "var(--border)" }} />
+          </div>
 
-        {/* Section Headline */}
-        <div className="mt-8 flex flex-col justify-between gap-4 sm:flex-row sm:items-end">
-          <div>
-            <h2
-              className="font-display text-2xl font-medium tracking-tight sm:text-3xl lg:text-4xl"
-              style={{ color: "var(--ink)" }}
-            >
-              Engineered Systems &amp; Research
+          <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-16">
+            <h2 className="text-4xl md:text-5xl font-bold max-w-xl">
+              Systems engineered for scale and speed.
             </h2>
-            <p
-              className="font-body mt-2 text-sm leading-relaxed sm:text-base"
-              style={{ color: "var(--muted)" }}
-            >
-              Autonomous NLP agents, fine-tuned transformer pipelines, FAISS vector search, and high-speed full-stack applications.
+            <p className="max-w-md text-sm leading-relaxed" style={{ color: "var(--muted)" }}>
+              A curated selection of my recent AI and full-stack projects.
             </p>
           </div>
 
-          <div
-            className="font-mono-label text-xs uppercase tracking-wider shrink-0"
-            style={{ color: "var(--muted)" }}
-          >
-            Showing {displayedProjects.length} of {activeProjects.length} Repositories
-          </div>
-        </div>
+          {dbProjects.length === 0 ? (
+            <div className="text-center py-20 text-zinc-500 border border-zinc-800 rounded-lg">
+              No projects yet. Add some in the Admin Dashboard!
+            </div>
+          ) : (
+            <div className="border-t" style={{ borderColor: "var(--border)" }}>
+              {displayedProjects.map((project, idx) => {
+                const isExpanded = expandedSlugs.includes(project.id);
 
-        {/* Expandable Accordion Rows */}
-        <div className="mt-12 flex flex-col gap-3">
-          {displayedProjects.map((project, idx) => {
-            const isExpanded = expandedSlugs.includes(project.id || project.slug);
-            const indexNumber = String(idx + 1).padStart(2, "0");
-
-            return (
-              <div
-                key={project.id || project.slug}
-                className="rounded-sm border transition-all duration-200"
-                style={{
-                  borderColor: isExpanded ? "var(--accent)" : "var(--border)",
-                  backgroundColor: "var(--panel)",
-                }}
-              >
-                {/* Clickable Row Header */}
-                <button
-                  type="button"
-                  onClick={() => toggleRow(project.id || project.slug)}
-                  aria-expanded={isExpanded}
-                  className="w-full text-left flex items-center justify-between gap-4 px-5 py-5 sm:px-6 cursor-pointer transition-colors"
-                >
-                  <div className="flex min-w-0 items-baseline gap-3 sm:gap-4">
-                    <span
-                      className="font-mono-label text-xs select-none"
-                      style={{ color: isExpanded ? "var(--accent)" : "var(--muted)" }}
+                return (
+                  <div key={project.id} className="group border-b" style={{ borderColor: "var(--border)" }}>
+                    <button
+                      onClick={() => toggleRow(project.id)}
+                      className="w-full flex flex-col md:flex-row md:items-center justify-between py-6 md:py-8 text-left transition-colors hover:bg-white/[0.02]"
                     >
-                      {indexNumber}
-                    </span>
-
-                    <div className="flex min-w-0 flex-col gap-0.5 sm:flex-row sm:items-baseline sm:gap-3">
-                      <span
-                        className="font-display text-lg sm:text-xl font-medium truncate"
-                        style={{ color: "var(--ink)" }}
-                      >
-                        {project.name}
-                      </span>
-                      <span
-                        className="font-mono-label text-xs uppercase tracking-wider truncate"
-                        style={{ color: "var(--muted)" }}
-                      >
-                        {project.tagline}
-                      </span>
-                    </div>
-                  </div>
-
-                  {/* Right: Stack preview + Expand indicator */}
-                  <div className="flex shrink-0 items-center gap-3">
-                    <div className="hidden md:flex items-center gap-1.5">
-                      {project.stack.slice(0, 3).map((tech) => (
-                        <span
-                          key={tech}
-                          className="font-mono-label rounded-sm border px-2 py-0.5 text-[10px]"
-                          style={{
-                            borderColor: "var(--border)",
-                            backgroundColor: "var(--bg)",
-                            color: "var(--muted)",
-                          }}
-                        >
-                          {tech}
+                      <div className="flex flex-col md:flex-row md:items-center gap-2 md:gap-8 mb-4 md:mb-0">
+                        <span className="font-mono-label text-xs" style={{ color: "var(--muted)" }}>
+                          0{idx + 1}
                         </span>
-                      ))}
-                      {project.stack.length > 3 && (
-                        <span
-                          className="font-mono-label text-[10px]"
-                          style={{ color: "var(--muted)" }}
-                        >
-                          +{project.stack.length - 3}
-                        </span>
-                      )}
-                    </div>
-
-                    <span
-                      className="font-mono-label flex h-6 w-6 items-center justify-center rounded-sm border text-xs font-bold transition-transform duration-200"
-                      style={{
-                        borderColor: isExpanded ? "var(--accent)" : "var(--border)",
-                        backgroundColor: isExpanded ? "var(--accent)" : "var(--bg)",
-                        color: isExpanded ? "var(--bg)" : "var(--ink)",
-                        transform: isExpanded ? "rotate(45deg)" : "rotate(0deg)",
-                      }}
-                    >
-                      +
-                    </span>
-                  </div>
-                </button>
-
-                {/* Inline Expanded Panel */}
-                <AnimatePresence initial={false}>
-                  {isExpanded && (
-                    <motion.div
-                      key="content"
-                      initial="collapsed"
-                      animate="open"
-                      exit="collapsed"
-                      variants={{
-                        open: { opacity: 1, height: "auto" },
-                        collapsed: { opacity: 0, height: 0 },
-                      }}
-                      transition={{ duration: 0.3, ease: [0.04, 0.62, 0.23, 0.98] }}
-                      className="overflow-hidden"
-                    >
-                      <div
-                        className="border-t px-5 pt-4 pb-6 sm:px-6 sm:pb-6"
-                        style={{ borderColor: "var(--border)" }}
-                      >
-                        <p
-                          className="font-body text-sm leading-relaxed sm:text-base max-w-3xl"
-                          style={{ color: "var(--muted)" }}
-                        >
-                          {project.description}
-                        </p>
-
-                        {/* All Tech Stack Pills */}
-                        <div className="mt-4 flex flex-wrap gap-1.5">
-                          {project.stack.map((tech) => (
-                            <span
-                              key={tech}
-                              className="font-mono-label rounded-sm border px-2.5 py-0.5 text-[11px]"
-                              style={{
-                                borderColor: "var(--border)",
-                                backgroundColor: "var(--bg)",
-                                color: "var(--ink)",
-                              }}
-                            >
-                              {tech}
+                        <h3 className="text-xl md:text-2xl font-semibold tracking-tight transition-colors group-hover:text-emerald-400">
+                          {project.title}
+                        </h3>
+                      </div>
+                      
+                      <div className="flex items-center gap-4 text-sm" style={{ color: "var(--muted)" }}>
+                        <div className="hidden md:flex gap-3">
+                          {project.tags.map((tag: string) => (
+                            <span key={tag} className="px-2 py-1 rounded-full border text-xs whitespace-nowrap" style={{ borderColor: "var(--border)" }}>
+                              {tag}
                             </span>
                           ))}
                         </div>
-
-                        {/* Links */}
-                        <div className="mt-5 flex flex-wrap items-center gap-5 pt-2">
-                          {project.links.map((link) => (
-                            <a
-                              key={link.label}
-                              href={link.href}
-                              target="_blank"
-                              rel="noopener noreferrer"
-                              className="font-mono-label inline-flex items-center gap-1.5 text-xs font-medium uppercase tracking-wider underline underline-offset-4 transition-colors hover:text-ink"
-                              style={{ color: "var(--accent)" }}
-                            >
-                              <span>{link.label}</span>
-                              <span>↗</span>
-                            </a>
-                          ))}
-                        </div>
+                        <motion.div animate={{ rotate: isExpanded ? 45 : 0 }} transition={{ duration: 0.2 }}>
+                          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                            <path d="M12 5v14M5 12h14" />
+                          </svg>
+                        </motion.div>
                       </div>
-                    </motion.div>
-                  )}
-                </AnimatePresence>
-              </div>
-            );
-          })}
-        </div>
+                    </button>
 
-        {/* View All / Collapse Button */}
-        {activeProjects.length > 5 && (
-          <div className="mt-10 flex justify-center">
-            <button
-              type="button"
-              onClick={() => setShowAll(!showAll)}
-              className="font-mono-label rounded-sm border px-6 py-3 text-xs uppercase tracking-wider transition-all duration-200 hover:border-accent hover:text-accent cursor-pointer"
-              style={{
-                borderColor: "var(--border)",
-                backgroundColor: "var(--panel)",
-                color: "var(--ink)",
-              }}
-            >
-              {showAll
-                ? "− Collapse to Top 5 Repositories"
-                : `+ View All Repositories (${activeProjects.length})`}
-            </button>
-          </div>
-        )}
-      </div>
+                    <AnimatePresence>
+                      {isExpanded && (
+                        <motion.div
+                          initial={{ height: 0, opacity: 0 }}
+                          animate={{ height: "auto", opacity: 1 }}
+                          exit={{ height: 0, opacity: 0 }}
+                          transition={{ duration: 0.3, ease: [0.16, 1, 0.3, 1] }}
+                          className="overflow-hidden"
+                        >
+                          <div className="pb-8 pt-2 grid grid-cols-1 md:grid-cols-12 gap-8">
+                            <div className="md:col-span-8 md:col-start-2">
+                              <p className="text-sm md:text-base leading-relaxed mb-6" style={{ color: "var(--muted)" }}>
+                                {project.description}
+                              </p>
+                              <div className="flex flex-wrap gap-4">
+                                {project.link && (
+                                  <a href={project.link} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-2 text-sm font-medium hover:text-emerald-400 transition-colors">
+                                    Live Project
+                                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M7 17l9.2-9.2M17 17V7H7"/></svg>
+                                  </a>
+                                )}
+                                {project.github && (
+                                  <a href={project.github} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-2 text-sm font-medium hover:text-emerald-400 transition-colors">
+                                    Source Code
+                                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M7 17l9.2-9.2M17 17V7H7"/></svg>
+                                  </a>
+                                )}
+                              </div>
+                            </div>
+                          </div>
+                        </motion.div>
+                      )}
+                    </AnimatePresence>
+                  </div>
+                );
+              })}
+            </div>
+          )}
+
+          {dbProjects.length > 5 && (
+            <div className="mt-12 flex justify-center">
+              <button
+                onClick={() => setShowAll(!showAll)}
+                className="group flex items-center gap-2 px-6 py-3 rounded-full border text-sm font-medium transition-colors hover:bg-white hover:text-black"
+                style={{ borderColor: "var(--border)" }}
+              >
+                {showAll ? "Show Less" : "View All Projects"}
+              </button>
+            </div>
+          )}
+        </div>
       </ScrollReveal>
     </section>
   );

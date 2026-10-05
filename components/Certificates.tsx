@@ -1,137 +1,68 @@
 "use client";
 
 import { useState } from "react";
-import { certificates as hardcodedCerts } from "@/lib/data";
 import ScrollReveal from "./ScrollReveal";
 
-export default function Certificates({ dbCerts }: { dbCerts?: any[] }) {
-  const activeCerts = (dbCerts && dbCerts.length > 0) ? dbCerts : hardcodedCerts;
+export default function Certificates({ dbCerts }: { dbCerts: any[] }) {
   const [showAll, setShowAll] = useState(false);
-  const displayedCerts = showAll ? activeCerts : activeCerts.slice(0, 4);
+  const displayedCerts = showAll ? dbCerts : dbCerts.slice(0, 4);
 
   return (
     <section
       id="certificates"
       className="relative border-t py-24 md:py-32"
-      style={{
-        borderColor: "var(--border)",
-        backgroundColor: "var(--bg)",
-      }}
+      style={{ borderColor: "var(--border)", backgroundColor: "var(--bg)" }}
     >
       <ScrollReveal width="100%">
         <div className="container-px">
-        {/* Section Eyebrow Line */}
-        <div className="flex items-center gap-3 mb-8">
-          <span
-            className="font-mono-label text-xs uppercase tracking-widest"
-            style={{ color: "var(--accent)" }}
-          >
-            04 // Certifications
-          </span>
-          <div
-            className="h-[1px] flex-1"
-            style={{ backgroundColor: "var(--border)" }}
-          />
-        </div>
+          <div className="flex items-center gap-3 mb-8">
+            <span className="font-mono-label text-xs uppercase tracking-widest" style={{ color: "var(--accent)" }}>
+              04 // Certifications
+            </span>
+            <div className="h-px flex-1" style={{ backgroundColor: "var(--border)" }} />
+          </div>
 
-        {/* Section Header */}
-        <h2
-          className="font-display mb-12 text-3xl font-medium md:text-4xl"
-          style={{ color: "var(--ink)" }}
-        >
-          Certifications
-        </h2>
+          <div className="mb-16">
+            <h2 className="text-4xl md:text-5xl font-bold max-w-xl mb-6">Continuous learning & credentials.</h2>
+            <p className="max-w-md text-sm leading-relaxed" style={{ color: "var(--muted)" }}>
+              Verified achievements from industry leaders.
+            </p>
+          </div>
 
-        {/* Minimalist Editorial List with Left Hairline Rail (No Block/Card Container) */}
-        <ul className="max-w-4xl space-y-6">
-          {displayedCerts.map((cert) => (
-            <li
-              key={cert.title}
-              className="group flex flex-col gap-2 border-l-2 pl-5 sm:flex-row sm:items-baseline sm:justify-between transition-colors hover:border-accent"
-              style={{ borderColor: "var(--border)" }}
-            >
-              <div className="space-y-1">
-                <div className="flex items-center gap-2.5 flex-wrap">
-                  <span
-                    className="font-mono-label text-sm font-medium transition-colors group-hover:text-accent"
-                    style={{ color: "var(--ink)" }}
-                  >
-                    {cert.title}
-                  </span>
-                  {cert.tag && (
-                    <span
-                      className="font-mono-label text-[10px] uppercase tracking-wider px-1.5 py-0.5 rounded border"
-                      style={{
-                        borderColor: "var(--border)",
-                        color: "var(--muted)",
-                        backgroundColor: "var(--panel)",
-                      }}
-                    >
-                      {cert.tag}
-                    </span>
+          {dbCerts.length === 0 ? (
+            <div className="text-center py-20 text-zinc-500 border border-zinc-800 rounded-lg">
+              No certificates yet. Add some in the Admin Dashboard!
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              {displayedCerts.map((cert) => (
+                <div key={cert.id} className="group relative p-6 rounded-2xl border transition-colors hover:bg-white/[0.02]" style={{ borderColor: "var(--border)" }}>
+                  <div className="mb-4 text-xs font-mono-label" style={{ color: "var(--muted)" }}>{cert.date}</div>
+                  <h3 className="text-xl font-semibold mb-2 group-hover:text-emerald-400 transition-colors">{cert.title}</h3>
+                  <div className="text-sm font-medium mb-6" style={{ color: "var(--muted)" }}>{cert.issuer}</div>
+                  {cert.link && (
+                    <a href={cert.link} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-2 text-sm font-medium text-emerald-400 hover:text-emerald-300 transition-colors">
+                      View Credential
+                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M7 17l9.2-9.2M17 17V7H7"/></svg>
+                    </a>
                   )}
                 </div>
-                <div
-                  className="font-mono-label text-xs"
-                  style={{ color: "var(--muted)" }}
-                >
-                  {cert.issuer} {cert.credentialId ? `· ID: ${cert.credentialId}` : ""}
-                </div>
-              </div>
+              ))}
+            </div>
+          )}
 
-              {/* Date & Document Link */}
-              <div className="flex items-center gap-4 shrink-0 sm:flex-col sm:items-end sm:gap-1.5">
-                <span
-                  className="font-mono-label text-xs uppercase tracking-wider"
-                  style={{ color: "var(--muted)" }}
-                >
-                  {cert.date}
-                </span>
-                {cert.file && (
-                  <a
-                    href={cert.file}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="font-mono-label text-xs underline underline-offset-4 transition-colors hover:text-ink inline-flex items-center gap-1"
-                    style={{ color: "var(--accent)" }}
-                    title={`View / Download ${cert.title}`}
-                  >
-                    {cert.file.endsWith(".pdf") ? "PDF" : "Credential"} ↗
-                  </a>
-                )}
-              </div>
-            </li>
-          ))}
-        </ul>
-
-        {/* View All / Collapse Toggle */}
-        {activeCerts.length > 4 && (
-          <div className="mt-8">
-            <button
-              type="button"
-              onClick={() => setShowAll(!showAll)}
-              className="font-mono-label inline-flex items-center gap-2 rounded border px-4 py-2 text-xs uppercase tracking-wider transition-colors hover:border-accent hover:text-ink cursor-pointer"
-              style={{
-                borderColor: "var(--border)",
-                color: "var(--accent)",
-                backgroundColor: "transparent",
-              }}
-            >
-              {showAll
-                ? `− Collapse to Top 4`
-                : `+ View All Certifications (${activeCerts.length})`}
-            </button>
-          </div>
-        )}
-
-        {/* Bottom Monospace Annotation */}
-        <p
-          className="font-mono-label mt-12 max-w-2xl text-xs uppercase tracking-wider"
-          style={{ color: "var(--muted)" }}
-        >
-          Verified industry credentials across Cybersecurity, Generative AI, LLM Orchestration, and Prompt Engineering.
-        </p>
-      </div>
+          {dbCerts.length > 4 && (
+            <div className="mt-12 flex justify-center">
+              <button
+                onClick={() => setShowAll(!showAll)}
+                className="group flex items-center gap-2 px-6 py-3 rounded-full border text-sm font-medium transition-colors hover:bg-white hover:text-black"
+                style={{ borderColor: "var(--border)" }}
+              >
+                {showAll ? "Show Less" : "View All"}
+              </button>
+            </div>
+          )}
+        </div>
       </ScrollReveal>
     </section>
   );
