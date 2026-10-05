@@ -31,6 +31,7 @@ export default function InteractiveTerminal() {
     },
   ]);
   const [input, setInput] = useState("");
+  const [chatLog, setChatLog] = useState<{role: string, content: string}[]>([]);
   const [isProcessing, setIsProcessing] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
   const scrollRef = useRef<HTMLDivElement>(null);
@@ -41,13 +42,13 @@ export default function InteractiveTerminal() {
     }
   }, [history, isProcessing]);
 
-  const fetchLLMResponse = async (text: string, outputId: string) => {
+  const fetchLLMResponse = async (text: string, outputId: string, currentChatLog: {role: string, content: string}[]) => {
     setIsProcessing(true);
     try {
       const res = await fetch(process.env.NODE_ENV === "production" ? "https://ilyanos-backend.onrender.com/api/chat" : "http://localhost:8000/api/chat", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ messages: [{ role: "user", content: text }] }),
+        body: JSON.stringify({ messages: [...currentChatLog, { role: "user", content: text }] }),
       });
 
       if (!res.ok) throw new Error("API Error");
@@ -69,6 +70,9 @@ export default function InteractiveTerminal() {
           );
         }
       }
+    
+      // Save assistant response to memory
+      setChatLog(prev => [...prev, { role: "user", content: text }, { role: "assistant", content: currentText }]);
     } catch (error) {
       setHistory((prev) => 
         prev.map(item => item.id === outputId ? { ...item, content: "Error connecting to IlyanOS backend." } : item)
@@ -199,7 +203,7 @@ export default function InteractiveTerminal() {
       newHistory.push({ id: outputId, type: "output", content: "..." });
       setHistory(newHistory);
       setInput("");
-      fetchLLMResponse(trimmed, outputId);
+      fetchLLMResponse(trimmed, outputId, chatLog);
     }
   };
 
