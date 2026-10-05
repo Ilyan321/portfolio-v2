@@ -1,11 +1,11 @@
 "use client";
 
-import { stats } from "@/lib/data";
+// import { stats } from "@/lib/data";
 import ScrollReveal from "./ScrollReveal";
 import dynamic from "next/dynamic";
 
 
-export default function Hero() {
+export default function Hero({ statsCounts }: { statsCounts?: { projects: number, certs: number, internships: number, skills: number } }) {
   return (
     <section
       id="top"
@@ -93,7 +93,12 @@ export default function Hero() {
               className="mt-12 grid grid-cols-2 gap-6 border-t pt-6 sm:grid-cols-4"
               style={{ borderColor: "var(--border)" }}
             >
-              {stats.map((s) => (
+              {(statsCounts ? [
+                { value: `${statsCounts.projects}+`, label: "Curated Projects & Models" },
+                { value: `${statsCounts.certs}`, label: "Certifications" },
+                { value: `${statsCounts.internships}`, label: "Industry Internships" },
+                { value: `${statsCounts.skills}+`, label: "Technical Skills" }
+              ] : []).map((s) => (
                 <div key={s.label} className="space-y-1">
                   <div
                     className="font-mono-label text-[10px] uppercase tracking-wider"

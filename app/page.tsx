@@ -7,6 +7,7 @@ import Certificates from "@/components/Certificates";
 import Contact from "@/components/Contact";
 import Footer from "@/components/Footer";
 import { supabase } from "@/lib/supabase";
+import { experience, techStack } from "@/lib/data";
 
 export default async function Home() {
   let dbProjects = [];
@@ -27,7 +28,12 @@ export default async function Home() {
     <div className="relative min-h-screen">
       <Nav />
       <main>
-        <Hero />
+        <Hero statsCounts={{ 
+          projects: dbProjects.length || 12, 
+          certs: dbCerts.length || 7, 
+          internships: experience.length, 
+          skills: techStack.reduce((acc, g) => acc + g.items.length, 0) 
+        }} />
         <About />
         <Projects dbProjects={dbProjects} />
         <Experience />
