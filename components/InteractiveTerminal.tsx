@@ -1,9 +1,10 @@
 "use client";
 
 import React, { useState, useRef, useEffect } from "react";
-import { site, techStack } from "@/lib/data";
+import { site } from "@/lib/data";
 
 type HistoryItem = {
+  id: string;
   type: "command" | "output" | "error" | "system";
   content: React.ReactNode;
 };
@@ -18,17 +19,19 @@ const PROMPT = (
 export default function InteractiveTerminal() {
   const [history, setHistory] = useState<HistoryItem[]>([
     {
+      id: "init",
       type: "system",
       content: (
         <div className="text-zinc-400 mb-2">
           IlyanOS v2.0.0 (x86_64-linux-gnu)
           <br />
-          Type 'help' or just ask a question in plain English.
+          Type 'help' or just ask a question in plain English (powered by Groq).
         </div>
       ),
     },
   ]);
   const [input, setInput] = useState("");
+  const [isProcessing, setIsProcessing] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
   const scrollRef = useRef<HTMLDivElement>(null);
 
@@ -36,51 +39,74 @@ export default function InteractiveTerminal() {
     if (scrollRef.current) {
       scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
     }
-  }, [history]);
+  }, [history, isProcessing]);
 
-  const handleNLP = (text: string): React.ReactNode | null => {
-    const lower = text.toLowerCase();
-    if (lower.includes("who are you") || lower.includes("about you") || lower.includes("background")) {
-      return site.about;
-    }
-    if (lower.includes("skill") || lower.includes("tech stack") || lower.includes("languages")) {
-      return (
-        <div className="space-y-2 text-zinc-300">
-          {techStack.map(g => (
-            <div key={g.group}>
-              <span className="text-emerald-400">{g.group}:</span> {g.items.join(", ")}
-            </div>
-          ))}
-        </div>
+  const fetchLLMResponse = async (text: string, outputId: string) => {
+    setIsProcessing(true);
+    try {
+      const res = await fetch("/api/terminal", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ prompt: text }),
+      });
+
+      if (!res.ok) throw new Error("API Error");
+
+      const reader = res.body?.getReader();
+      const decoder = new TextDecoder("utf-8");
+
+      let currentText = "";
+
+      if (reader) {
+        while (true) {
+          const { done, value } = await reader.read();
+          if (done) break;
+          const chunk = decoder.decode(value, { stream: true });
+          
+          // DataStream format parsing (ai sdk returns text chunks prefixed with '0:')
+          const lines = chunk.split('\n');
+          for (const line of lines) {
+            if (line.startsWith('0:')) {
+              try {
+                const textChunk = JSON.parse(line.slice(2));
+                currentText += textChunk;
+              } catch (e) {}
+            }
+          }
+
+          setHistory((prev) => 
+            prev.map(item => item.id === outputId ? { ...item, content: currentText } : item)
+          );
+        }
+      }
+    } catch (error) {
+      setHistory((prev) => 
+        prev.map(item => item.id === outputId ? { ...item, content: "Error connecting to IlyanOS backend." } : item)
       );
+    } finally {
+      setIsProcessing(false);
+      setTimeout(() => inputRef.current?.focus(), 100);
     }
-    if (lower.includes("project") || lower.includes("portfolio") || lower.includes("work")) {
-      return "Navigating to projects... (or type 'cd projects')";
-    }
-    if (lower.includes("contact") || lower.includes("email") || lower.includes("hire") || lower.includes("reach")) {
-      return `Email me at: ${site.email} or WhatsApp: ${site.phone}`;
-    }
-    if (lower.includes("hello") || lower.includes("hi ") || lower === "hi") {
-      return "Hello! I am Ilyan's AI assistant shell. Ask me about his skills, projects, or contact info.";
-    }
-    if (lower.includes("joke")) {
-      return "Why do programmers prefer dark mode? Because light attracts bugs.";
-    }
-    return null;
   };
 
   const handleCommand = (cmd: string) => {
+    if (isProcessing) return;
+    
     const trimmed = cmd.trim();
     if (!trimmed) {
-      setHistory((prev) => [...prev, { type: "command", content: cmd }]);
+      setHistory((prev) => [...prev, { id: Date.now().toString(), type: "command", content: cmd }]);
       return;
     }
 
-    const newHistory: HistoryItem[] = [...history, { type: "command", content: trimmed }];
+    const commandId = Date.now().toString();
+    const outputId = (Date.now() + 1).toString();
+    const newHistory: HistoryItem[] = [...history, { id: commandId, type: "command", content: trimmed }];
+    
     const args = trimmed.split(" ");
     const command = args[0].toLowerCase();
 
     let output: React.ReactNode = "";
+    let bypassLLM = false;
 
     // 1. Check strict commands
     switch (command) {
@@ -95,6 +121,7 @@ export default function InteractiveTerminal() {
             <span className="text-emerald-400">python</span><span>Run a script (try: python run_inference.py)</span>
           </div>
         );
+        bypassLLM = true;
         break;
       case "ls":
         output = (
@@ -106,9 +133,11 @@ export default function InteractiveTerminal() {
             <span>contact/</span>
           </div>
         );
+        bypassLLM = true;
         break;
       case "whoami":
         output = "ilyan khan - ai engineer & full-stack developer";
+        bypassLLM = true;
         break;
       case "clear":
         setHistory([]);
@@ -116,6 +145,7 @@ export default function InteractiveTerminal() {
         return;
       case "sudo":
         output = "ilyan is not in the sudoers file. This incident will be reported.";
+        bypassLLM = true;
         break;
       case "cd":
         const dir = args[1]?.replace('/', '');
@@ -127,6 +157,7 @@ export default function InteractiveTerminal() {
         } else {
           output = `bash: cd: ${dir}: No such file or directory`;
         }
+        bypassLLM = true;
         break;
       case "cat":
         const file = args[1];
@@ -135,6 +166,7 @@ export default function InteractiveTerminal() {
         } else {
           output = `cat: ${file || ''}: No such file or directory`;
         }
+        bypassLLM = true;
         break;
       case "python":
         if (args[1] === "run_inference.py" || args[1] === "run_inference_pipeline.py") {
@@ -162,25 +194,23 @@ export default function InteractiveTerminal() {
         } else {
           output = `python: can't open file '${args[1]}': [Errno 2] No such file or directory`;
         }
+        bypassLLM = true;
         break;
-      default:
-        // 2. Fallback to NLP if command not found
-        const nlpResponse = handleNLP(trimmed);
-        if (nlpResponse) {
-          output = nlpResponse;
-          if (trimmed.toLowerCase().includes("project") || trimmed.toLowerCase().includes("portfolio")) {
-             setTimeout(() => { window.location.hash = "#projects"; }, 800);
-          }
-        } else {
-          output = `bash: ${command}: command not found. (Try 'help' or ask a question in English!)`;
-        }
     }
 
-    if (output) {
-      newHistory.push({ type: "output", content: output });
+    if (bypassLLM) {
+      if (output) {
+        newHistory.push({ id: outputId, type: "output", content: output });
+      }
+      setHistory(newHistory);
+      setInput("");
+    } else {
+      // Send to Groq
+      newHistory.push({ id: outputId, type: "output", content: "..." });
+      setHistory(newHistory);
+      setInput("");
+      fetchLLMResponse(trimmed, outputId);
     }
-    setHistory(newHistory);
-    setInput("");
   };
 
   return (
@@ -207,8 +237,8 @@ export default function InteractiveTerminal() {
         className="flex-1 overflow-y-auto p-4 space-y-3"
         style={{ color: "#E6EDF3", scrollbarWidth: "thin", scrollbarColor: "#30363D transparent" }}
       >
-        {history.map((item, i) => (
-          <div key={i}>
+        {history.map((item) => (
+          <div key={item.id}>
             {item.type === "command" && (
               <div className="flex gap-2 items-start">
                 {PROMPT}
@@ -225,7 +255,7 @@ export default function InteractiveTerminal() {
         ))}
 
         <div className="flex gap-2 items-center">
-          {PROMPT}
+          {!isProcessing && PROMPT}
           <input
             ref={inputRef}
             type="text"
@@ -234,8 +264,8 @@ export default function InteractiveTerminal() {
             onKeyDown={(e) => {
               if (e.key === "Enter") handleCommand(input);
             }}
+            disabled={isProcessing}
             className="flex-1 bg-transparent text-zinc-100 !outline-none !ring-0 !border-none !shadow-none"
-            style={{ outline: "none", boxShadow: "none", border: "none" }}
             autoFocus
             spellCheck={false}
             autoComplete="off"
