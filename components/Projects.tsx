@@ -102,13 +102,13 @@ export default function Projects({ dbProjects }: { dbProjects?: any[] }) {
                           className="font-display text-lg sm:text-xl font-medium truncate"
                           style={{ color: "var(--ink)" }}
                         >
-                          {project.title || project.name}
+                          {titleStr}
                         </span>
                         <span
                           className="font-mono-label text-xs uppercase tracking-wider truncate"
                           style={{ color: "var(--muted)" }}
                         >
-                          {project.tagline || ""}
+                          {taglineStr}
                         </span>
                       </div>
                     </div>
