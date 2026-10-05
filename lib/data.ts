@@ -211,6 +211,26 @@ export const projects: Project[] = [
     links: [
       { label: "GitHub", href: "https://github.com/Ilyan321/business-consulting-crew" }
     ],
+  },
+  {
+    slug: "mdview",
+    name: "MDView Studio",
+    tagline: "High-Performance Markdown PWA",
+    description: "High-performance GitHub Markdown Studio with real-time Mermaid diagrams, KaTeX formulas, offline PWA capabilities, and local data sovereignty.",
+    stack: ["React", "TypeScript", "PWA", "Mermaid.js", "KaTeX"],
+    links: [
+      { label: "GitHub", href: "https://github.com/Ilyan321/mdview" }
+    ],
+  },
+  {
+    slug: "musicbot",
+    name: "MusicBot",
+    tagline: "Minecraft-Styled Audio Downloader",
+    description: "Minecraft-styled music search and audio downloader web application built with FastAPI, featuring YouTube Music integration and synced LRCLIB lyrics.",
+    stack: ["Python", "FastAPI", "yt-dlp", "HTML/CSS"],
+    links: [
+      { label: "GitHub", href: "https://github.com/Ilyan321/MusicBot" }
+    ],
   }
 ];
 
