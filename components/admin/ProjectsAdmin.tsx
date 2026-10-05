@@ -4,11 +4,6 @@ import { useState } from "react";
 import { DndContext, closestCenter, KeyboardSensor, PointerSensor, useSensor, useSensors, DragEndEvent } from "@dnd-kit/core";
 import { arrayMove, SortableContext, sortableKeyboardCoordinates, verticalListSortingStrategy } from "@dnd-kit/sortable";
 import { SortableItem } from "./SortableItem";
-import { createClient } from "@supabase/supabase-js";
-
-// We use the public client for making client-side requests but actually 
-// to bypass RLS for admin operations, we should hit Next.js API routes or use Server Actions.
-// Let's create server actions in a separate file.
 import { updateProjectPositions, deleteProject, createProject } from "@/app/admin/actions";
 
 export function ProjectsAdmin({ initialProjects }: { initialProjects: any[] }) {
@@ -17,6 +12,8 @@ export function ProjectsAdmin({ initialProjects }: { initialProjects: any[] }) {
   const [newTitle, setNewTitle] = useState("");
   const [newDesc, setNewDesc] = useState("");
   const [newLink, setNewLink] = useState("");
+  const [newGithub, setNewGithub] = useState("");
+  const [newTags, setNewTags] = useState("");
   
   const sensors = useSensors(
     useSensor(PointerSensor),
@@ -44,37 +41,57 @@ export function ProjectsAdmin({ initialProjects }: { initialProjects: any[] }) {
 
   async function handleAdd(e: React.FormEvent) {
     e.preventDefault();
-    const newProj = await createProject({ title: newTitle, description: newDesc, link: newLink, position: projects.length });
+    const tagArray = newTags.split(",").map(t => t.trim()).filter(Boolean);
+    const newProj = await createProject({ 
+      title: newTitle, 
+      description: newDesc, 
+      link: newLink, 
+      github: newGithub,
+      tags: tagArray,
+      position: projects.length 
+    });
     if (newProj) {
       setProjects([...projects, newProj]);
       setIsAdding(false);
       setNewTitle("");
       setNewDesc("");
       setNewLink("");
+      setNewGithub("");
+      setNewTags("");
     }
   }
 
   async function handleDelete(id: string) {
-    if (confirm("Are you sure?")) {
+    if (confirm("Are you sure you want to delete this project?")) {
       await deleteProject(id);
       setProjects(projects.filter(p => p.id !== id));
     }
   }
 
   return (
-    <div>
+    <div className="font-body">
       <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
         <SortableContext items={projects} strategy={verticalListSortingStrategy}>
-          <div className="space-y-2 mb-4">
+          <div className="space-y-3 mb-6">
             {projects.map((project) => (
               <SortableItem key={project.id} id={project.id}>
-                <div className="flex justify-between items-center bg-zinc-900 p-4 rounded border border-zinc-800">
-                  <div>
-                    <h3 className="font-bold">{project.title}</h3>
-                    <p className="text-sm text-zinc-400">{project.description}</p>
+                <div 
+                  className="flex flex-col sm:flex-row justify-between items-start sm:items-center p-5 rounded-sm border"
+                  style={{ borderColor: "var(--border)", backgroundColor: "var(--panel)" }}
+                >
+                  <div className="flex-1 min-w-0 pr-4">
+                    <h3 className="font-display text-lg truncate" style={{ color: "var(--ink)" }}>{project.title}</h3>
+                    <p className="text-sm truncate mt-1" style={{ color: "var(--muted)" }}>{project.description}</p>
+                    <div className="flex gap-2 mt-2">
+                      {(project.tags || []).slice(0, 3).map((t: string) => (
+                         <span key={t} className="font-mono-label text-[10px] border px-2 py-0.5 rounded-sm" style={{ borderColor: "var(--border)", color: "var(--muted)" }}>{t}</span>
+                      ))}
+                    </div>
                   </div>
-                  <div className="flex gap-2">
-                    <button onClick={() => handleDelete(project.id)} className="bg-red-500/10 text-red-500 px-3 py-1 rounded hover:bg-red-500/20">Delete</button>
+                  <div className="mt-4 sm:mt-0 flex-shrink-0">
+                    <button onClick={() => handleDelete(project.id)} className="font-mono-label text-xs uppercase tracking-wider px-4 py-2 border rounded-sm text-red-500 border-red-500/30 hover:bg-red-500/10 transition-colors">
+                      Delete
+                    </button>
                   </div>
                 </div>
               </SortableItem>
@@ -84,17 +101,39 @@ export function ProjectsAdmin({ initialProjects }: { initialProjects: any[] }) {
       </DndContext>
 
       {isAdding ? (
-        <form onSubmit={handleAdd} className="bg-zinc-900 p-4 rounded border border-zinc-800 space-y-4">
-          <input type="text" placeholder="Title" required value={newTitle} onChange={e => setNewTitle(e.target.value)} className="w-full bg-zinc-950 border border-zinc-800 rounded p-2 text-white" />
-          <textarea placeholder="Description" required value={newDesc} onChange={e => setNewDesc(e.target.value)} className="w-full bg-zinc-950 border border-zinc-800 rounded p-2 text-white" />
-          <input type="text" placeholder="Link (optional)" value={newLink} onChange={e => setNewLink(e.target.value)} className="w-full bg-zinc-950 border border-zinc-800 rounded p-2 text-white" />
-          <div className="flex gap-2">
-            <button type="submit" className="bg-emerald-500 text-black px-4 py-2 rounded font-semibold">Save</button>
-            <button type="button" onClick={() => setIsAdding(false)} className="bg-zinc-800 text-white px-4 py-2 rounded">Cancel</button>
+        <form onSubmit={handleAdd} className="p-6 rounded-sm border space-y-4" style={{ borderColor: "var(--border)", backgroundColor: "var(--panel)" }}>
+          <div className="space-y-1">
+            <label className="font-mono-label text-[10px] uppercase tracking-widest" style={{ color: "var(--muted)" }}>Title</label>
+            <input type="text" required value={newTitle} onChange={e => setNewTitle(e.target.value)} className="w-full font-body text-sm rounded-sm border p-3 outline-none focus:border-emerald-500" style={{ backgroundColor: "var(--bg)", borderColor: "var(--border)", color: "var(--ink)" }} />
+          </div>
+          <div className="space-y-1">
+            <label className="font-mono-label text-[10px] uppercase tracking-widest" style={{ color: "var(--muted)" }}>Description</label>
+            <textarea required value={newDesc} onChange={e => setNewDesc(e.target.value)} className="w-full font-body text-sm rounded-sm border p-3 outline-none focus:border-emerald-500 min-h-[100px]" style={{ backgroundColor: "var(--bg)", borderColor: "var(--border)", color: "var(--ink)" }} />
+          </div>
+          <div className="space-y-1">
+            <label className="font-mono-label text-[10px] uppercase tracking-widest" style={{ color: "var(--muted)" }}>Tags (comma separated)</label>
+            <input type="text" value={newTags} onChange={e => setNewTags(e.target.value)} placeholder="React, Node, Typescript" className="w-full font-body text-sm rounded-sm border p-3 outline-none focus:border-emerald-500" style={{ backgroundColor: "var(--bg)", borderColor: "var(--border)", color: "var(--ink)" }} />
+          </div>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div className="space-y-1">
+              <label className="font-mono-label text-[10px] uppercase tracking-widest" style={{ color: "var(--muted)" }}>Live URL</label>
+              <input type="text" value={newLink} onChange={e => setNewLink(e.target.value)} className="w-full font-body text-sm rounded-sm border p-3 outline-none focus:border-emerald-500" style={{ backgroundColor: "var(--bg)", borderColor: "var(--border)", color: "var(--ink)" }} />
+            </div>
+            <div className="space-y-1">
+              <label className="font-mono-label text-[10px] uppercase tracking-widest" style={{ color: "var(--muted)" }}>GitHub URL</label>
+              <input type="text" value={newGithub} onChange={e => setNewGithub(e.target.value)} className="w-full font-body text-sm rounded-sm border p-3 outline-none focus:border-emerald-500" style={{ backgroundColor: "var(--bg)", borderColor: "var(--border)", color: "var(--ink)" }} />
+            </div>
+          </div>
+          
+          <div className="flex gap-4 pt-4 border-t" style={{ borderColor: "var(--border)" }}>
+            <button type="submit" className="font-mono-label text-xs uppercase tracking-widest px-6 py-3 rounded-sm transition-colors cursor-pointer" style={{ backgroundColor: "var(--accent)", color: "var(--bg)" }}>Save Project</button>
+            <button type="button" onClick={() => setIsAdding(false)} className="font-mono-label text-xs uppercase tracking-widest px-6 py-3 border rounded-sm transition-colors cursor-pointer" style={{ borderColor: "var(--border)", color: "var(--muted)" }}>Cancel</button>
           </div>
         </form>
       ) : (
-        <button onClick={() => setIsAdding(true)} className="bg-zinc-800 text-white px-4 py-2 rounded font-semibold hover:bg-zinc-700 w-full">+ Add Project</button>
+        <button onClick={() => setIsAdding(true)} className="w-full font-mono-label text-xs uppercase tracking-widest px-4 py-4 border border-dashed rounded-sm transition-colors hover:border-emerald-500 hover:text-emerald-500 cursor-pointer" style={{ borderColor: "var(--border)", color: "var(--muted)" }}>
+          + Add New Project
+        </button>
       )}
     </div>
   );

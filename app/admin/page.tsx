@@ -17,14 +17,20 @@ export default async function AdminPage() {
   }
 
   return (
-    <div className="space-y-12 py-8">
+    <div className="space-y-16 py-8">
       <section>
-        <h2 className="text-2xl font-bold mb-6">Projects</h2>
+        <div className="flex items-center gap-3 mb-6">
+          <span className="font-mono-label text-xs uppercase tracking-widest" style={{ color: "var(--accent)" }}>01 //</span>
+          <h2 className="font-display text-2xl font-medium" style={{ color: "var(--ink)" }}>Manage Projects</h2>
+        </div>
         <ProjectsAdmin initialProjects={projects || []} />
       </section>
 
       <section>
-        <h2 className="text-2xl font-bold mb-6">Certifications</h2>
+        <div className="flex items-center gap-3 mb-6">
+          <span className="font-mono-label text-xs uppercase tracking-widest" style={{ color: "var(--accent)" }}>02 //</span>
+          <h2 className="font-display text-2xl font-medium" style={{ color: "var(--ink)" }}>Manage Certifications</h2>
+        </div>
         <CertsAdmin initialCerts={certs || []} />
       </section>
     </div>
