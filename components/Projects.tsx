@@ -39,8 +39,8 @@ export default function Projects({ dbProjects }: { dbProjects: any[] }) {
           </div>
 
           {dbProjects.length === 0 ? (
-            <div className="text-center py-20 text-zinc-500 border border-zinc-800 rounded-lg">
-              No projects yet. Add some in the Admin Dashboard!
+            <div className="text-sm" style={{ color: "var(--muted)" }}>
+              No projects yet.
             </div>
           ) : (
             <div className="border-t" style={{ borderColor: "var(--border)" }}>

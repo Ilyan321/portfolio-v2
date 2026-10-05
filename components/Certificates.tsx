@@ -30,8 +30,8 @@ export default function Certificates({ dbCerts }: { dbCerts: any[] }) {
           </div>
 
           {dbCerts.length === 0 ? (
-            <div className="text-center py-20 text-zinc-500 border border-zinc-800 rounded-lg">
-              No certificates yet. Add some in the Admin Dashboard!
+            <div className="text-sm" style={{ color: "var(--muted)" }}>
+              No certificates yet.
             </div>
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
