@@ -3,66 +3,118 @@
 import { useState } from "react";
 import ScrollReveal from "./ScrollReveal";
 
-export default function Certificates({ dbCerts }: { dbCerts: any[] }) {
+export default function Certificates({ dbCerts }: { dbCerts?: any[] }) {
+  const activeCerts = dbCerts || [];
   const [showAll, setShowAll] = useState(false);
-  const displayedCerts = showAll ? dbCerts : dbCerts.slice(0, 4);
+  const displayedCerts = showAll ? activeCerts : activeCerts.slice(0, 4);
 
   return (
     <section
       id="certificates"
       className="relative border-t py-24 md:py-32"
-      style={{ borderColor: "var(--border)", backgroundColor: "var(--bg)" }}
+      style={{
+        borderColor: "var(--border)",
+        backgroundColor: "var(--bg)",
+      }}
     >
       <ScrollReveal width="100%">
         <div className="container-px">
-          <div className="flex items-center gap-3 mb-8">
-            <span className="font-mono-label text-xs uppercase tracking-widest" style={{ color: "var(--accent)" }}>
-              04 // Certifications
-            </span>
-            <div className="h-px flex-1" style={{ backgroundColor: "var(--border)" }} />
-          </div>
+        {/* Section Eyebrow Line */}
+        <div className="flex items-center gap-3 mb-8">
+          <span
+            className="font-mono-label text-xs uppercase tracking-widest"
+            style={{ color: "var(--accent)" }}
+          >
+            04 // Certifications
+          </span>
+          <div
+            className="h-px flex-1"
+            style={{ backgroundColor: "var(--border)" }}
+          />
+        </div>
 
-          <div className="mb-16">
-            <h2 className="text-4xl md:text-5xl font-bold max-w-xl mb-6">Continuous learning & credentials.</h2>
-            <p className="max-w-md text-sm leading-relaxed" style={{ color: "var(--muted)" }}>
-              Verified achievements from industry leaders.
-            </p>
-          </div>
+        {/* Section Header */}
+        <div className="mb-16 max-w-2xl">
+          <h2
+            className="font-display text-4xl sm:text-5xl font-medium tracking-tight mb-6"
+            style={{ color: "var(--ink)" }}
+          >
+            Certifications
+          </h2>
+        </div>
 
-          {dbCerts.length === 0 ? (
-            <div className="text-sm" style={{ color: "var(--muted)" }}>
+        {/* Certificates List */}
+        <div className="flex flex-col">
+          {activeCerts.length === 0 ? (
+            <div className="text-sm font-mono-label" style={{ color: "var(--muted)" }}>
               No certificates yet.
             </div>
           ) : (
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              {displayedCerts.map((cert) => (
-                <div key={cert.id} className="group relative p-6 rounded-2xl border transition-colors hover:bg-white/[0.02]" style={{ borderColor: "var(--border)" }}>
-                  <div className="mb-4 text-xs font-mono-label" style={{ color: "var(--muted)" }}>{cert.date}</div>
-                  <h3 className="text-xl font-semibold mb-2 group-hover:text-emerald-400 transition-colors">{cert.title}</h3>
-                  <div className="text-sm font-medium mb-6" style={{ color: "var(--muted)" }}>{cert.issuer}</div>
-                  {cert.link && (
-                    <a href={cert.link} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-2 text-sm font-medium text-emerald-400 hover:text-emerald-300 transition-colors">
-                      View Credential
-                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M7 17l9.2-9.2M17 17V7H7"/></svg>
-                    </a>
-                  )}
-                </div>
-              ))}
-            </div>
-          )}
-
-          {dbCerts.length > 4 && (
-            <div className="mt-12 flex justify-center">
-              <button
-                onClick={() => setShowAll(!showAll)}
-                className="group flex items-center gap-2 px-6 py-3 rounded-full border text-sm font-medium transition-colors hover:bg-white hover:text-black"
+            displayedCerts.map((cert, idx) => (
+              <div
+                key={cert.id || idx}
+                className="group flex flex-col sm:flex-row sm:items-center justify-between border-b py-6 sm:py-8 transition-colors hover:bg-white/[0.02]"
                 style={{ borderColor: "var(--border)" }}
               >
-                {showAll ? "Show Less" : "View All"}
-              </button>
-            </div>
+                {/* Left: Title & Issuer */}
+                <div className="flex flex-col gap-2 mb-4 sm:mb-0 max-w-xl">
+                  <h3
+                    className="font-display text-lg sm:text-xl font-medium"
+                    style={{ color: "var(--ink)" }}
+                  >
+                    {cert.title}
+                  </h3>
+                  <div
+                    className="font-mono-label text-xs uppercase tracking-wider"
+                    style={{ color: "var(--muted)" }}
+                  >
+                    {cert.issuer} {cert.credentialId && `// ID: ${cert.credentialId}`}
+                  </div>
+                </div>
+
+                {/* Right: Date & PDF Link */}
+                <div className="flex items-center justify-between sm:justify-end gap-6 sm:gap-12 shrink-0">
+                  <span
+                    className="font-mono-label text-xs"
+                    style={{ color: "var(--muted)" }}
+                  >
+                    {cert.date}
+                  </span>
+                  
+                  {cert.link || cert.file ? (
+                    <a
+                      href={cert.link || cert.file}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="font-mono-label flex items-center gap-2 text-xs uppercase tracking-wider transition-colors hover:text-accent"
+                      style={{ color: "var(--ink)" }}
+                    >
+                      <span>{cert.link || cert.file ? (cert.link?.includes('pdf') || cert.file?.includes('pdf') ? 'PDF' : 'Credential') : ''}</span>
+                      <span>↗</span>
+                    </a>
+                  ) : (
+                    <span className="w-10"></span>
+                  )}
+                </div>
+              </div>
+            ))
           )}
         </div>
+
+        {/* View All Button */}
+        {activeCerts.length > 4 && (
+          <div className="mt-12 flex justify-start">
+            <button
+              type="button"
+              onClick={() => setShowAll(!showAll)}
+              className="font-mono-label inline-flex items-center gap-2 text-xs uppercase tracking-wider transition-colors hover:text-accent cursor-pointer"
+              style={{ color: "var(--muted)" }}
+            >
+              <span>+ View All Certifications ({activeCerts.length})</span>
+            </button>
+          </div>
+        )}
+      </div>
       </ScrollReveal>
     </section>
   );
