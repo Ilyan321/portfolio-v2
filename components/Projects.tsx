@@ -2,13 +2,15 @@
 
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { projects } from "@/lib/data";
+import { projects as hardcodedProjects } from "@/lib/data";
 import ScrollReveal from "./ScrollReveal";
 
-export default function Projects() {
+export default function Projects({ dbProjects }: { dbProjects?: any[] }) {
+  const activeProjects = dbProjects || hardcodedProjects;
+
   // Allow expanding rows inline (single or multiple)
   const [expandedSlugs, setExpandedSlugs] = useState<string[]>([
-    projects[0]?.slug || "", // First flagship open by default
+    activeProjects[0]?.id || activeProjects[0]?.slug || "", // First flagship open by default
   ]);
   const [showAll, setShowAll] = useState(false);
 
@@ -18,7 +20,7 @@ export default function Projects() {
     );
   };
 
-  const displayedProjects = showAll ? projects : projects.slice(0, 5);
+  const displayedProjects = showAll ? projects : activeProjects.slice(0, 5);
 
   return (
     <section
@@ -66,19 +68,19 @@ export default function Projects() {
             className="font-mono-label text-xs uppercase tracking-wider shrink-0"
             style={{ color: "var(--muted)" }}
           >
-            Showing {displayedProjects.length} of {projects.length} Repositories
+            Showing {displayedProjects.length} of {activeProjects.length} Repositories
           </div>
         </div>
 
         {/* Expandable Accordion Rows */}
         <div className="mt-12 flex flex-col gap-3">
           {displayedProjects.map((project, idx) => {
-            const isExpanded = expandedSlugs.includes(project.slug);
+            const isExpanded = expandedSlugs.includes(project.id || project.slug);
             const indexNumber = String(idx + 1).padStart(2, "0");
 
             return (
               <div
-                key={project.slug}
+                key={project.id || project.slug}
                 className="rounded-sm border transition-all duration-200"
                 style={{
                   borderColor: isExpanded ? "var(--accent)" : "var(--border)",
@@ -88,7 +90,7 @@ export default function Projects() {
                 {/* Clickable Row Header */}
                 <button
                   type="button"
-                  onClick={() => toggleRow(project.slug)}
+                  onClick={() => toggleRow(project.id || project.slug)}
                   aria-expanded={isExpanded}
                   className="w-full text-left flex items-center justify-between gap-4 px-5 py-5 sm:px-6 cursor-pointer transition-colors"
                 >
@@ -225,7 +227,7 @@ export default function Projects() {
         </div>
 
         {/* View All / Collapse Button */}
-        {projects.length > 5 && (
+        {activeProjects.length > 5 && (
           <div className="mt-10 flex justify-center">
             <button
               type="button"
@@ -239,7 +241,7 @@ export default function Projects() {
             >
               {showAll
                 ? "− Collapse to Top 5 Repositories"
-                : `+ View All Repositories (${projects.length})`}
+                : `+ View All Repositories (${activeProjects.length})`}
             </button>
           </div>
         )}

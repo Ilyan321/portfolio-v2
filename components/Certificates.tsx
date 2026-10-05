@@ -1,12 +1,13 @@
 "use client";
 
 import { useState } from "react";
-import { certificates } from "@/lib/data";
+import { certificates as hardcodedCerts } from "@/lib/data";
 import ScrollReveal from "./ScrollReveal";
 
-export default function Certificates() {
+export default function Certificates({ dbCerts }: { dbCerts?: any[] }) {
+  const activeCerts = (dbCerts && dbCerts.length > 0) ? dbCerts : hardcodedCerts;
   const [showAll, setShowAll] = useState(false);
-  const displayedCerts = showAll ? certificates : certificates.slice(0, 4);
+  const displayedCerts = showAll ? activeCerts : activeCerts.slice(0, 4);
 
   return (
     <section
@@ -104,7 +105,7 @@ export default function Certificates() {
         </ul>
 
         {/* View All / Collapse Toggle */}
-        {certificates.length > 4 && (
+        {activeCerts.length > 4 && (
           <div className="mt-8">
             <button
               type="button"
@@ -118,7 +119,7 @@ export default function Certificates() {
             >
               {showAll
                 ? `− Collapse to Top 4`
-                : `+ View All Certifications (${certificates.length})`}
+                : `+ View All Certifications (${activeCerts.length})`}
             </button>
           </div>
         )}

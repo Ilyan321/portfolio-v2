@@ -1,44 +1,35 @@
-# Portfolio V2 - Roadmap
+# Roadmap
 
-This document outlines the phases for building the new portfolio based on the finalized `SPEC.md`.
-
-## Phase 1: Foundation & Theming (Wave 1)
-- **Goal:** Set up the global layout, font, and strict color palette (Forest Green/Sage).
+## Phase 1: Vercel CLI & Domain Setup
+- **Objective:** Fix the domain pointing for `ilyankhan.tech`.
 - **Tasks:**
-  - Clear out any leftover 3D canvas or distracting elements from the initial Next.js build.
-  - Define global CSS variables for the color palette (`--bg-forest`, `--text-sage`, etc.).
-  - Set up the main structural container for the Single Page Application (SPA).
-  - Implement the minimalist Header/Navigation (sticky or floating).
+  - Login to Vercel CLI.
+  - Link the current directory to the Vercel project.
+  - Configure the domain `ilyankhan.tech` to point to the new project via Vercel CLI.
 
-## Phase 2: Hero & About Sections (Wave 2)
-- **Goal:** Build the introductory sections with ample whitespace.
+## Phase 2: Supabase Setup & Authentication
+- **Objective:** Set up Supabase project and simple authentication.
 - **Tasks:**
-  - Create the Hero section (Name + short punchy title).
-  - Create the About section with a condensed, punchy version of the bio from `extracted_supabase_data.json`.
+  - Initialize Supabase project (via CLI or ask user for URL/Anon Key).
+  - Create tables for `projects` and `certifications` with `position` columns for sorting.
+  - Set up a simple Next.js API route or server action for login (using a secure cookie with a hardcoded password/hash in `.env`, or using Supabase Auth with a single user).
 
-## Phase 3: Skills Section (Wave 2)
-- **Goal:** Display skills in a clean, minimalist format.
+## Phase 3: Admin Dashboard & CRUD
+- **Objective:** Build the private admin dashboard.
 - **Tasks:**
-  - Parse skills from the extracted JSON.
-  - Implement a simple, aesthetic grid or list layout for the skills.
+  - Create a `/admin` route protected by middleware.
+  - Build UI for listing, adding, editing, and deleting projects and certifications.
+  - Implement form submission to Supabase.
 
-## Phase 4: Projects Section (Accordion Style) (Wave 3)
-- **Goal:** Implement the interactive, expandable project rows.
+## Phase 4: Drag and Drop Reordering
+- **Objective:** Add drag-and-drop to sort items.
 - **Tasks:**
-  - Build the `ProjectRow` component with inline expansion (accordion logic).
-  - Select the top 4-5 projects to display by default.
-  - Populate the short descriptions and GitHub/Live links.
-  - Implement the "View All" functionality to reveal the rest.
+  - Integrate a drag-and-drop library (e.g., `@dnd-kit/core` or `framer-motion` reorder).
+  - Update `position` field in Supabase on drop.
+  - Ensure public portfolio fetches data ordered by `position`.
 
-## Phase 5: Certifications & Footer (Wave 3)
-- **Goal:** Wrap up the bottom of the page.
+## Phase 5: Hero Section UI Update
+- **Objective:** Replace the terminal with a photo.
 - **Tasks:**
-  - Add the certifications list.
-  - Build the minimalist footer with social links.
-
-## Phase 6: Final Polish & Verification (Wave 4)
-- **Goal:** Ensure the site looks pixel-perfect and exactly matches the vibe of the inspiration.
-- **Tasks:**
-  - Check spacing, typography, and contrast.
-  - Verify smooth scrolling between sections.
-  - Verify responsive design (mobile view).
+  - Remove `HeroAnimation.tsx` usage.
+  - Add an `Image` component with a neat frame/animation in `Hero.tsx`.
