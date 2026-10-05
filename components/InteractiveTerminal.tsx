@@ -33,7 +33,7 @@ export default function InteractiveTerminal() {
   const [input, setInput] = useState("");
   const [chatLog, setChatLog] = useState<{role: string, content: string}[]>([]);
   const [isProcessing, setIsProcessing] = useState(false);
-  const inputRef = useRef<HTMLInputElement>(null);
+  const inputRef = useRef<HTMLTextAreaElement>(null);
   const scrollRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -247,18 +247,29 @@ export default function InteractiveTerminal() {
           </div>
         ))}
 
-        <div className="flex gap-2 items-center">
+        <div className="flex gap-2 items-start">
           {!isProcessing && PROMPT}
-          <input
+          <textarea
             ref={inputRef}
-            type="text"
+            rows={1}
             value={input}
-            onChange={(e) => setInput(e.target.value)}
+            onChange={(e) => {
+              setInput(e.target.value);
+              e.target.style.height = 'auto';
+              e.target.style.height = e.target.scrollHeight + 'px';
+            }}
             onKeyDown={(e) => {
-              if (e.key === "Enter") handleCommand(input);
+              if (e.key === "Enter" && !e.shiftKey) {
+                e.preventDefault();
+                handleCommand(input);
+                if (inputRef.current) {
+                  inputRef.current.style.height = 'auto';
+                }
+              }
             }}
             disabled={isProcessing}
-            className="flex-1 bg-transparent text-zinc-100 !outline-none !ring-0 !border-none !shadow-none"
+            className="flex-1 bg-transparent text-zinc-100 !outline-none !ring-0 !border-none !shadow-none resize-none overflow-hidden"
+            style={{ minHeight: "24px", paddingTop: "2px" }}
             autoFocus
             spellCheck={false}
             autoComplete="off"
