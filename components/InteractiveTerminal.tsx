@@ -45,7 +45,7 @@ export default function InteractiveTerminal() {
   const fetchLLMResponse = async (text: string, outputId: string, currentChatLog: {role: string, content: string}[]) => {
     setIsProcessing(true);
     try {
-      const res = await fetch(process.env.NODE_ENV === "production" ? "https://ilyanos-backend.onrender.com/api/chat" : "http://localhost:8000/api/chat", {
+      const res = await fetch(process.env.NODE_ENV === "production" ? "https://portfolio-backend-tt6t.onrender.com/api/chat" : "http://localhost:8000/api/chat", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ messages: [...currentChatLog, { role: "user", content: text }] }),
