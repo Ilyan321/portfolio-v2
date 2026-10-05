@@ -62,17 +62,7 @@ export default function InteractiveTerminal() {
           const { done, value } = await reader.read();
           if (done) break;
           const chunk = decoder.decode(value, { stream: true });
-          
-          // DataStream format parsing (ai sdk returns text chunks prefixed with '0:')
-          const lines = chunk.split('\n');
-          for (const line of lines) {
-            if (line.startsWith('0:')) {
-              try {
-                const textChunk = JSON.parse(line.slice(2));
-                currentText += textChunk;
-              } catch (e) {}
-            }
-          }
+          currentText += chunk;
 
           setHistory((prev) => 
             prev.map(item => item.id === outputId ? { ...item, content: currentText } : item)

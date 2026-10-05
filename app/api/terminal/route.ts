@@ -34,9 +34,9 @@ export async function POST(req: Request) {
       prompt,
     });
 
-    return result.toDataStreamResponse();
+    return result.toTextStreamResponse();
   } catch (error) {
     console.error("Groq API error:", error);
-    return new Response(JSON.stringify({ error: "Internal Server Error" }), { status: 500 });
+    return new Response("Error connecting to IlyanOS backend.", { status: 500 });
   }
 }
