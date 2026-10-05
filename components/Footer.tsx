@@ -4,17 +4,17 @@ export default function Footer() {
   return (
     <footer
       id="site-footer"
-      className="relative border-t py-10"
+      className="relative border-t py-12"
       style={{
         borderColor: "var(--border)",
         backgroundColor: "var(--bg)",
       }}
     >
       <div
-        className="container-px font-mono-label grid grid-cols-1 gap-4 text-[11px] uppercase sm:grid-cols-3 sm:items-center"
+        className="container-px font-mono-label grid grid-cols-1 gap-6 text-[11px] uppercase sm:grid-cols-3 sm:items-center sm:gap-4"
         style={{ color: "var(--muted)" }}
       >
-        <div className="text-left">
+        <div className="text-center sm:text-left">
           <span>QUEST Nawabshah · BE Computer Systems Engineering</span>
         </div>
         
@@ -22,7 +22,7 @@ export default function Footer() {
           <span style={{ color: "var(--accent)" }}>Status: Open to work</span>
         </div>
         
-        <div className="flex items-center justify-start sm:justify-end gap-4 text-left sm:text-right">
+        <div className="flex items-center justify-center sm:justify-end gap-4">
           <a href="/admin" className="hover:text-[var(--accent)] transition-colors">
             Admin
           </a>
