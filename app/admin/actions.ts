@@ -60,3 +60,21 @@ export async function deleteCert(id: string) {
   revalidatePath("/");
   revalidatePath("/admin");
 }
+
+export async function updateProject(id: string, data: any) {
+  checkAuth();
+  const { data: updatedProj, error } = await supabaseAdmin.from("v2_projects").update(data).eq("id", id).select().single();
+  if (error) throw new Error(error.message);
+  revalidatePath("/");
+  revalidatePath("/admin");
+  return updatedProj;
+}
+
+export async function updateCert(id: string, data: any) {
+  checkAuth();
+  const { data: updatedCert, error } = await supabaseAdmin.from("v2_certifications").update(data).eq("id", id).select().single();
+  if (error) throw new Error(error.message);
+  revalidatePath("/");
+  revalidatePath("/admin");
+  return updatedCert;
+}

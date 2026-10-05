@@ -4,11 +4,13 @@ import { useState } from "react";
 import { DndContext, closestCenter, KeyboardSensor, PointerSensor, useSensor, useSensors, DragEndEvent } from "@dnd-kit/core";
 import { arrayMove, SortableContext, sortableKeyboardCoordinates, verticalListSortingStrategy } from "@dnd-kit/sortable";
 import { SortableItem } from "./SortableItem";
-import { updateProjectPositions, deleteProject, createProject } from "@/app/admin/actions";
+import { updateProjectPositions, deleteProject, createProject, updateProject } from "@/app/admin/actions";
 
 export function ProjectsAdmin({ initialProjects }: { initialProjects: any[] }) {
   const [projects, setProjects] = useState(initialProjects);
   const [isAdding, setIsAdding] = useState(false);
+  const [editingId, setEditingId] = useState<string | null>(null);
+  
   const [newTitle, setNewTitle] = useState("");
   const [newDesc, setNewDesc] = useState("");
   const [newLink, setNewLink] = useState("");
@@ -39,26 +41,51 @@ export function ProjectsAdmin({ initialProjects }: { initialProjects: any[] }) {
     }
   }
 
-  async function handleAdd(e: React.FormEvent) {
+  function startAdding() {
+    setIsAdding(true);
+    setEditingId(null);
+    setNewTitle("");
+    setNewDesc("");
+    setNewLink("");
+    setNewGithub("");
+    setNewTags("");
+  }
+
+  function startEditing(p: any) {
+    setIsAdding(true);
+    setEditingId(p.id);
+    setNewTitle(p.title);
+    setNewDesc(p.description);
+    setNewLink(p.link || "");
+    setNewGithub(p.github || "");
+    setNewTags(p.tags ? p.tags.join(", ") : "");
+  }
+
+  async function handleSave(e: React.FormEvent) {
     e.preventDefault();
     const tagArray = newTags.split(",").map(t => t.trim()).filter(Boolean);
-    const newProj = await createProject({ 
+    const data = { 
       title: newTitle, 
       description: newDesc, 
       link: newLink, 
       github: newGithub,
-      tags: tagArray,
-      position: projects.length 
-    });
-    if (newProj) {
-      setProjects([...projects, newProj]);
-      setIsAdding(false);
-      setNewTitle("");
-      setNewDesc("");
-      setNewLink("");
-      setNewGithub("");
-      setNewTags("");
+      tags: tagArray
+    };
+
+    if (editingId) {
+      const updatedProj = await updateProject(editingId, data);
+      if (updatedProj) {
+        setProjects(projects.map(p => p.id === editingId ? updatedProj : p));
+      }
+    } else {
+      const newProj = await createProject({ ...data, position: projects.length });
+      if (newProj) {
+        setProjects([...projects, newProj]);
+      }
     }
+
+    setIsAdding(false);
+    setEditingId(null);
   }
 
   async function handleDelete(id: string) {
@@ -88,8 +115,11 @@ export function ProjectsAdmin({ initialProjects }: { initialProjects: any[] }) {
                       ))}
                     </div>
                   </div>
-                  <div className="mt-4 sm:mt-0 flex-shrink-0">
-                    <button onClick={() => handleDelete(project.id)} className="font-mono-label text-xs uppercase tracking-wider px-4 py-2 border rounded-sm text-red-500 border-red-500/30 hover:bg-red-500/10 transition-colors">
+                  <div className="mt-4 sm:mt-0 flex-shrink-0 flex gap-2">
+                    <button onClick={() => startEditing(project)} className="font-mono-label text-xs uppercase tracking-wider px-4 py-2 border rounded-sm transition-colors cursor-pointer" style={{ borderColor: "var(--border)", color: "var(--ink)" }}>
+                      Edit
+                    </button>
+                    <button onClick={() => handleDelete(project.id)} className="font-mono-label text-xs uppercase tracking-wider px-4 py-2 border rounded-sm text-red-500 border-red-500/30 hover:bg-red-500/10 transition-colors cursor-pointer">
                       Delete
                     </button>
                   </div>
@@ -101,37 +131,39 @@ export function ProjectsAdmin({ initialProjects }: { initialProjects: any[] }) {
       </DndContext>
 
       {isAdding ? (
-        <form onSubmit={handleAdd} className="p-6 rounded-sm border space-y-4" style={{ borderColor: "var(--border)", backgroundColor: "var(--panel)" }}>
+        <form onSubmit={handleSave} className="p-6 rounded-sm border space-y-4" style={{ borderColor: "var(--border)", backgroundColor: "var(--panel)" }}>
           <div className="space-y-1">
             <label className="font-mono-label text-[10px] uppercase tracking-widest" style={{ color: "var(--muted)" }}>Title</label>
-            <input type="text" required value={newTitle} onChange={e => setNewTitle(e.target.value)} className="w-full font-body text-sm rounded-sm border p-3 outline-none focus:border-emerald-500" style={{ backgroundColor: "var(--bg)", borderColor: "var(--border)", color: "var(--ink)" }} />
+            <input type="text" required value={newTitle} onChange={e => setNewTitle(e.target.value)} className="w-full font-body text-sm rounded-sm border p-3 outline-none transition-all focus:border-emerald-500" style={{ backgroundColor: "var(--bg)", borderColor: "var(--border)", color: "var(--ink)" }} />
           </div>
           <div className="space-y-1">
             <label className="font-mono-label text-[10px] uppercase tracking-widest" style={{ color: "var(--muted)" }}>Description</label>
-            <textarea required value={newDesc} onChange={e => setNewDesc(e.target.value)} className="w-full font-body text-sm rounded-sm border p-3 outline-none focus:border-emerald-500 min-h-[100px]" style={{ backgroundColor: "var(--bg)", borderColor: "var(--border)", color: "var(--ink)" }} />
+            <textarea required value={newDesc} onChange={e => setNewDesc(e.target.value)} className="w-full font-body text-sm rounded-sm border p-3 outline-none transition-all focus:border-emerald-500 min-h-[100px]" style={{ backgroundColor: "var(--bg)", borderColor: "var(--border)", color: "var(--ink)" }} />
           </div>
           <div className="space-y-1">
             <label className="font-mono-label text-[10px] uppercase tracking-widest" style={{ color: "var(--muted)" }}>Tags (comma separated)</label>
-            <input type="text" value={newTags} onChange={e => setNewTags(e.target.value)} placeholder="React, Node, Typescript" className="w-full font-body text-sm rounded-sm border p-3 outline-none focus:border-emerald-500" style={{ backgroundColor: "var(--bg)", borderColor: "var(--border)", color: "var(--ink)" }} />
+            <input type="text" value={newTags} onChange={e => setNewTags(e.target.value)} placeholder="React, Node, Typescript" className="w-full font-body text-sm rounded-sm border p-3 outline-none transition-all focus:border-emerald-500" style={{ backgroundColor: "var(--bg)", borderColor: "var(--border)", color: "var(--ink)" }} />
           </div>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div className="space-y-1">
               <label className="font-mono-label text-[10px] uppercase tracking-widest" style={{ color: "var(--muted)" }}>Live URL</label>
-              <input type="text" value={newLink} onChange={e => setNewLink(e.target.value)} className="w-full font-body text-sm rounded-sm border p-3 outline-none focus:border-emerald-500" style={{ backgroundColor: "var(--bg)", borderColor: "var(--border)", color: "var(--ink)" }} />
+              <input type="text" value={newLink} onChange={e => setNewLink(e.target.value)} className="w-full font-body text-sm rounded-sm border p-3 outline-none transition-all focus:border-emerald-500" style={{ backgroundColor: "var(--bg)", borderColor: "var(--border)", color: "var(--ink)" }} />
             </div>
             <div className="space-y-1">
               <label className="font-mono-label text-[10px] uppercase tracking-widest" style={{ color: "var(--muted)" }}>GitHub URL</label>
-              <input type="text" value={newGithub} onChange={e => setNewGithub(e.target.value)} className="w-full font-body text-sm rounded-sm border p-3 outline-none focus:border-emerald-500" style={{ backgroundColor: "var(--bg)", borderColor: "var(--border)", color: "var(--ink)" }} />
+              <input type="text" value={newGithub} onChange={e => setNewGithub(e.target.value)} className="w-full font-body text-sm rounded-sm border p-3 outline-none transition-all focus:border-emerald-500" style={{ backgroundColor: "var(--bg)", borderColor: "var(--border)", color: "var(--ink)" }} />
             </div>
           </div>
           
           <div className="flex gap-4 pt-4 border-t" style={{ borderColor: "var(--border)" }}>
-            <button type="submit" className="font-mono-label text-xs uppercase tracking-widest px-6 py-3 rounded-sm transition-colors cursor-pointer" style={{ backgroundColor: "var(--accent)", color: "var(--bg)" }}>Save Project</button>
+            <button type="submit" className="font-mono-label text-xs uppercase tracking-widest px-6 py-3 rounded-sm transition-colors cursor-pointer" style={{ backgroundColor: "var(--accent)", color: "var(--bg)" }}>
+              {editingId ? "Update Project" : "Save Project"}
+            </button>
             <button type="button" onClick={() => setIsAdding(false)} className="font-mono-label text-xs uppercase tracking-widest px-6 py-3 border rounded-sm transition-colors cursor-pointer" style={{ borderColor: "var(--border)", color: "var(--muted)" }}>Cancel</button>
           </div>
         </form>
       ) : (
-        <button onClick={() => setIsAdding(true)} className="w-full font-mono-label text-xs uppercase tracking-widest px-4 py-4 border border-dashed rounded-sm transition-colors hover:border-emerald-500 hover:text-emerald-500 cursor-pointer" style={{ borderColor: "var(--border)", color: "var(--muted)" }}>
+        <button onClick={startAdding} className="w-full font-mono-label text-xs uppercase tracking-widest px-4 py-4 border border-dashed rounded-sm transition-colors cursor-pointer" style={{ borderColor: "var(--border)", color: "var(--muted)" }} onMouseOver={(e) => { e.currentTarget.style.borderColor="var(--accent)"; e.currentTarget.style.color="var(--accent)" }} onMouseOut={(e) => { e.currentTarget.style.borderColor="var(--border)"; e.currentTarget.style.color="var(--muted)" }}>
           + Add New Project
         </button>
       )}
