@@ -72,7 +72,14 @@ export default function Projects({ dbProjects }: { dbProjects?: any[] }) {
             displayedProjects.map((project, idx) => {
               const isExpanded = expandedSlugs.includes(project.id || project.slug);
               const indexNumber = String(idx + 1).padStart(2, "0");
-
+              
+              let titleStr = project.title || project.name || "";
+              let taglineStr = project.tagline || "";
+              if (titleStr.includes("|||")) {
+                const parts = titleStr.split("|||").map((s: string) => s.trim());
+                titleStr = parts[0] || "";
+                taglineStr = parts[1] || "";
+              }
               return (
                 <div
                   key={project.id || project.slug}
