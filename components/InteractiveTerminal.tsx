@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useRef, useEffect } from "react";
-import { site } from "@/lib/data";
+import { site, techStack } from "@/lib/data";
 
 type HistoryItem = {
   type: "command" | "output" | "error" | "system";
@@ -9,7 +9,7 @@ type HistoryItem = {
 };
 
 const PROMPT = (
-  <span className="flex items-center gap-2">
+  <span className="flex items-center gap-2 whitespace-nowrap">
     <span style={{ color: "#4ade80" }}>ilyan@workspace</span>
     <span style={{ color: "var(--muted)" }}>:~$</span>
   </span>
@@ -23,7 +23,7 @@ export default function InteractiveTerminal() {
         <div className="text-zinc-400 mb-2">
           IlyanOS v2.0.0 (x86_64-linux-gnu)
           <br />
-          Type 'help' to see available commands.
+          Type 'help' or just ask a question in plain English.
         </div>
       ),
     },
@@ -38,6 +38,37 @@ export default function InteractiveTerminal() {
     }
   }, [history]);
 
+  const handleNLP = (text: string): React.ReactNode | null => {
+    const lower = text.toLowerCase();
+    if (lower.includes("who are you") || lower.includes("about you") || lower.includes("background")) {
+      return site.about;
+    }
+    if (lower.includes("skill") || lower.includes("tech stack") || lower.includes("languages")) {
+      return (
+        <div className="space-y-2 text-zinc-300">
+          {techStack.map(g => (
+            <div key={g.group}>
+              <span className="text-emerald-400">{g.group}:</span> {g.items.join(", ")}
+            </div>
+          ))}
+        </div>
+      );
+    }
+    if (lower.includes("project") || lower.includes("portfolio") || lower.includes("work")) {
+      return "Navigating to projects... (or type 'cd projects')";
+    }
+    if (lower.includes("contact") || lower.includes("email") || lower.includes("hire") || lower.includes("reach")) {
+      return `Email me at: ${site.email} or WhatsApp: ${site.phone}`;
+    }
+    if (lower.includes("hello") || lower.includes("hi ") || lower === "hi") {
+      return "Hello! I am Ilyan's AI assistant shell. Ask me about his skills, projects, or contact info.";
+    }
+    if (lower.includes("joke")) {
+      return "Why do programmers prefer dark mode? Because light attracts bugs.";
+    }
+    return null;
+  };
+
   const handleCommand = (cmd: string) => {
     const trimmed = cmd.trim();
     if (!trimmed) {
@@ -51,6 +82,7 @@ export default function InteractiveTerminal() {
 
     let output: React.ReactNode = "";
 
+    // 1. Check strict commands
     switch (command) {
       case "help":
         output = (
@@ -132,7 +164,16 @@ export default function InteractiveTerminal() {
         }
         break;
       default:
-        output = `bash: ${command}: command not found`;
+        // 2. Fallback to NLP if command not found
+        const nlpResponse = handleNLP(trimmed);
+        if (nlpResponse) {
+          output = nlpResponse;
+          if (trimmed.toLowerCase().includes("project") || trimmed.toLowerCase().includes("portfolio")) {
+             setTimeout(() => { window.location.hash = "#projects"; }, 800);
+          }
+        } else {
+          output = `bash: ${command}: command not found. (Try 'help' or ask a question in English!)`;
+        }
     }
 
     if (output) {
@@ -193,7 +234,8 @@ export default function InteractiveTerminal() {
             onKeyDown={(e) => {
               if (e.key === "Enter") handleCommand(input);
             }}
-            className="flex-1 bg-transparent outline-none text-zinc-100"
+            className="flex-1 bg-transparent text-zinc-100 !outline-none !ring-0 !border-none !shadow-none"
+            style={{ outline: "none", boxShadow: "none", border: "none" }}
             autoFocus
             spellCheck={false}
             autoComplete="off"
