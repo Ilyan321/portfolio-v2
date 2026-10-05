@@ -191,6 +191,26 @@ export const projects: Project[] = [
       { label: "GitHub", href: "https://github.com/Ilyan321/Hogwarts_Archivist" },
       { label: "Live Demo", href: "https://huggingface.co/spaces/Ilyankhan69/Hogwarts-Archivist" },
     ],
+  },
+  {
+    slug: "ai-researcher",
+    name: "AI Academic Researcher",
+    tagline: "5-Agent Autonomous Research Swarm",
+    description: "Multi-agent research team powered by CrewAI and Groq. Features autonomous web search, arXiv literature review, evidence auditing, and publication-grade report generation.",
+    stack: ["Python", "CrewAI", "Groq API", "Streamlit", "arXiv API"],
+    links: [
+      { label: "GitHub", href: "https://github.com/Ilyan321/researcher" }
+    ],
+  },
+  {
+    slug: "apexconsult-ai",
+    name: "ApexConsult AI",
+    tagline: "Multi-Agent Business Advisory System",
+    description: "4-agent strategic business advisory system coordinating competitive intelligence, stress-testing, and strategy synthesis using tier-1 management consulting methodologies.",
+    stack: ["Python", "CrewAI", "Groq LPU", "Streamlit"],
+    links: [
+      { label: "GitHub", href: "https://github.com/Ilyan321/business-consulting-crew" }
+    ],
   }
 ];
 
