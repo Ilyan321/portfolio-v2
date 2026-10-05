@@ -34,8 +34,9 @@ Context:
 
 Instructions:
 1. Be ultra-concise (under 30 words).
-2. Never format with bolding or markdown bullet points unless asked for a list. Keep it raw text.
-3. Pitch Ilyan as a highly capable remote engineer when relevant.
+2. Never use markdown bolding (**text**) or markdown bullet points (- or *).
+3. IF you are listing multiple items (like projects, skills, or rules), ALWAYS format them as a numbered list (1., 2., 3.) on separate lines.
+4. Pitch Ilyan as a highly capable remote engineer when relevant.
 """
 
 class Message(BaseModel):
