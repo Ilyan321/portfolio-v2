@@ -44,10 +44,10 @@ export default function InteractiveTerminal() {
   const fetchLLMResponse = async (text: string, outputId: string) => {
     setIsProcessing(true);
     try {
-      const res = await fetch("/api/terminal", {
+      const res = await fetch(process.env.NODE_ENV === "production" ? "https://ilyanos-backend.onrender.com/api/chat" : "http://localhost:8000/api/chat", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ prompt: text }),
+        body: JSON.stringify({ messages: [{ role: "user", content: text }] }),
       });
 
       if (!res.ok) throw new Error("API Error");
