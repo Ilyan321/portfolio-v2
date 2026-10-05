@@ -26,10 +26,13 @@ export default function ThemeProvider({ children }: { children: React.ReactNode 
 
   useEffect(() => {
     const saved = localStorage.getItem("theme") as Theme | null;
-    if (saved === "light" || saved === "dark") {
-      setThemeState(saved);
-      document.documentElement.classList.toggle("dark", saved === "dark");
+    if (saved === "light") {
+      setThemeState("light");
+      document.documentElement.classList.remove("dark");
+      document.documentElement.classList.add("light");
     } else {
+      setThemeState("dark");
+      document.documentElement.classList.remove("light");
       document.documentElement.classList.add("dark");
     }
     setMounted(true);
@@ -38,7 +41,13 @@ export default function ThemeProvider({ children }: { children: React.ReactNode 
   const setTheme = (newTheme: Theme) => {
     setThemeState(newTheme);
     localStorage.setItem("theme", newTheme);
-    document.documentElement.classList.toggle("dark", newTheme === "dark");
+    if (newTheme === "light") {
+      document.documentElement.classList.remove("dark");
+      document.documentElement.classList.add("light");
+    } else {
+      document.documentElement.classList.remove("light");
+      document.documentElement.classList.add("dark");
+    }
   };
 
   return (

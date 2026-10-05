@@ -32,12 +32,12 @@
 }
 
 .light {
-  --bg: #DAF1DE;
-  --panel: color-mix(in srgb, #DAF1DE 92%, white 8%);
-  --border: #8EB69B;
-  --accent: #163832;
-  --ink: #051F20;
-  --muted: #235347;
+  --bg: #FAFAFA;
+  --panel: #FFFFFF;
+  --border: #E5E7EB;
+  --accent: #111827;
+  --ink: #111827;
+  --muted: #6B7280;
 }
 
 * {
