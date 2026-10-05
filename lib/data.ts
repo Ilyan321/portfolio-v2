@@ -79,84 +79,102 @@ export type Project = {
 
 export const projects: Project[] = [
   {
+    slug: "haqdar",
+    name: "HaqDar (حقدار)",
+    tagline: "AI-Powered Women's Inheritance Rights Platform",
+    description: "Multi-agent swarm architecture (8 autonomous agents) featuring a deterministic Sharia Faraizi legal engine to calculate and recover inheritance rights.",
+    stack: ["Python", "CrewAI", "FastAPI", "Next.js", "PostgreSQL"],
+    links: [
+      { label: "GitHub", href: "https://github.com/Ilyan321/haqdar" }
+    ],
+  },
+  {
     slug: "schema-aware-sql-agent",
     name: "Schema-Aware SQL Agent",
-    tagline: "Autonomous NLP-to-SQL with AST Security Firewall",
-    description:
-      "Production-grade natural language query compiler powered by a LoRA fine-tuned LLaMA-3-8B model on the Yale Spider benchmark. Features a deterministic Python Abstract Syntax Tree (AST) validator that mathematically prevents destructive mutations and schema exposure.",
-    stack: ["PyTorch", "LLaMA-3-8B", "Unsloth", "LoRA", "Hugging Face Hub", "SQLite"],
+    tagline: "Generative-SQL Pipeline with Validation Firewall",
+    description: "A production-grade NLP-to-SQL pipeline featuring a LoRA fine-tuned Llama-3-8B model trained on the Spider dataset, protected by a deterministic Python security validation layer.",
+    stack: ["Python", "PyTorch", "LoRA / Unsloth", "Streamlit", "SQL"],
     links: [
       { label: "GitHub", href: "https://github.com/Ilyan321/Schema-Aware-SQL-Agent" },
       { label: "Hugging Face", href: "https://huggingface.co/Ilyankhan69/schema-aware-sql-agent" },
     ],
-    flagship: true,
   },
   {
-    slug: "hogwarts-archivist",
-    name: "The Hogwarts Archivist",
-    tagline: "Source-Attributed RAG Chatbot with Sub-Second FAISS Retrieval",
-    description:
-      "Enterprise-grade Retrieval-Augmented Generation (RAG) conversational intelligence system. Combines LangChain vector search, FAISS similarity indexing, and Groq LLaMA-3 high-speed inference to deliver verifiable, paragraph-exact literary citations with zero hallucination.",
-    stack: ["LangChain", "FAISS", "Groq LLaMA-3", "Sentence Transformers", "Streamlit", "PyPDF"],
+    slug: "aethel",
+    name: "ÆTHEL",
+    tagline: "Ultra-Luxury 3D Watchmaker Experience",
+    description: "An ultra-luxury, cinematic 3D web experience for the conceptual watchmaker ÆTHEL. Built with Next.js, GSAP scroll kinematics, and high-fidelity canvas rendering.",
+    stack: ["Next.js 15", "TypeScript", "Three.js", "GSAP", "Tailwind CSS"],
     links: [
-      { label: "GitHub", href: "https://github.com/Ilyan321/Hogwarts_Archivist" },
-      { label: "Live Space", href: "https://huggingface.co/spaces/Ilyankhan69/Hogwarts-Archivist" },
+      { label: "GitHub", href: "https://github.com/Ilyan321/AETHEL" }
     ],
-    flagship: true,
+  },
+  {
+    slug: "aegis-cli",
+    name: "Aegis CLI",
+    tagline: "Zero-Dependency Go DevSecOps Scanner",
+    description: "Ultra-fast DevSecOps CLI scanner written in Go that inspects git diffs and CI pipelines in under 10ms to prevent secret and credential leaks.",
+    stack: ["Go", "DevSecOps", "Regex", "CLI"],
+    links: [
+      { label: "GitHub", href: "https://github.com/Ilyan321/aegis-cli" }
+    ],
+  },
+  {
+    slug: "qwen-prompt-perfector",
+    name: "Qwen2.5-7B-Prompt-Perfector",
+    tagline: "Fine-Tuned LLM Foundation Model",
+    description: "A heavily fine-tuned Qwen 2.5 7B model optimized specifically to enhance and perfect unstructured prompt inputs into high-quality engineering prompts.",
+    stack: ["PyTorch", "Hugging Face", "Unsloth", "LLaMA-Factory"],
+    links: [
+      { label: "Hugging Face", href: "https://huggingface.co/Ilyankhan69/Qwen2.5-7B-Prompt-Perfector" }
+    ],
+  },
+  {
+    slug: "campusvault",
+    name: "CampusVault",
+    tagline: "Hyper-Local University RAG Platform",
+    description: "Syllabus-aligned campus knowledge and RAG platform that indexes university notes and lab scripts to provide contextual, natural-language academic answers.",
+    stack: ["Python", "FAISS", "LangChain", "Groq API", "Streamlit"],
+    links: [
+      { label: "GitHub", href: "https://github.com/Ilyan321/campusvault" }
+    ],
   },
   {
     slug: "vibeguard",
     name: "VibeGuard",
-    tagline: "Real-Time Multi-Label Content Moderation Engine",
-    description:
-      "Automated Trust & Safety NLP pipeline using a fine-tuned DistilBERT transformer to classify toxic content across 6 risk vectors with 86.67% accuracy and sub-50ms CPU/GPU inference latency.",
-    stack: ["DistilBERT", "PyTorch", "Transformers", "Streamlit", "Scikit-Learn"],
+    tagline: "Real-Time AI Content Moderation Engine",
+    description: "An AI-powered content moderation engine using a fine-tuned DistilBERT model to detect multi-label toxicity and harmful behavior in real time.",
+    stack: ["Python", "Transformers", "PyTorch", "Streamlit", "Scikit-Learn"],
     links: [
       { label: "GitHub", href: "https://github.com/Ilyan321/VibeGuard" },
-      { label: "Live Space", href: "https://huggingface.co/spaces/Ilyan321/vibeguard" },
+      { label: "Live Demo", href: "https://huggingface.co/spaces/Ilyankhan69/VibeGuard" },
     ],
-    flagship: true,
   },
   {
-    slug: "edufocus-attendance",
-    name: "EduFocus Attendance Portal",
-    tagline: "React 18 & Supabase Real-Time Attendance SPA",
-    description:
-      "Modern full-stack academic attendance tracking Single Page Application with bi-directional cloud syncing via Supabase PostgreSQL, Row-Level Security (RLS), quick-click batch status recording, and interactive classroom analytics.",
-    stack: ["React 18", "Vite", "Tailwind CSS", "Supabase", "PostgreSQL", "TypeScript"],
+    slug: "luna",
+    name: "Luna Chat",
+    tagline: "Offline-First Flutter Messaging Protocol",
+    description: "Beautiful, offline-first chatting app built with Flutter, Riverpod, Isar, and Supabase. Adheres to the strict Apple HIG 'Zero Slop' design philosophy.",
+    stack: ["Flutter", "Dart", "Riverpod", "Supabase", "Isar DB"],
     links: [
-      { label: "GitHub", href: "https://github.com/Ilyan321/attendance-app" },
-      { label: "Live Demo", href: "https://Ilyan321.github.io/attendance-app/" },
+      { label: "GitHub", href: "https://github.com/Ilyan321/luna" }
     ],
-    flagship: true,
   },
   {
-    slug: "email-spam-filter",
-    name: "Email Spam Classifier",
-    tagline: "DistilBERT Transformer Pipeline (99.05% Accuracy)",
-    description:
-      "End-to-end NLP classification pipeline fine-tuning a DistilBERT transformer on the Enron email dataset, trained with fp16 mixed-precision on dual T4 GPUs with a public inference widget on Hugging Face.",
-    stack: ["Python", "PyTorch", "DistilBERT", "Hugging Face Hub", "Kaggle GPU"],
+    slug: "silica",
+    name: "Silica",
+    tagline: "Glassmorphic WebGL Landing Page",
+    description: "Interactive 3D product showcase and landing page featuring Three.js WebGL models, GSAP scroll-driven canvas scrubbing, and glassmorphic UI overlays.",
+    stack: ["TypeScript", "Vite", "Three.js", "GSAP"],
     links: [
-      { label: "GitHub", href: "https://github.com/Ilyan321/email-spam-filter-model" },
-      { label: "Hugging Face", href: "https://huggingface.co/Ilyankhan69/email-spam-filter" },
+      { label: "GitHub", href: "https://github.com/Ilyan321/Silica" }
     ],
-  },
-  {
-    slug: "spatial-classroom",
-    name: "Spatial Classroom",
-    tagline: "Gamified Reverse-Tutor AI Platform",
-    description:
-      "Innovative reverse-classroom application implementing the Feynman Technique where users teach a curious AI student with real-time emotional state machines powered by Groq LLaMA-3 and Netlify Edge Functions.",
-    stack: ["JavaScript", "Netlify Edge", "Groq LLaMA 3", "HTML5 Canvas"],
-    links: [{ label: "GitHub", href: "https://github.com/Ilyan321/spatial-classroom" }],
   },
   {
     slug: "slasher-vision-35mm",
     name: "Slasher-Vision-35mm",
-    tagline: "Custom SDXL Diffusion LoRA for 35mm Retro Cinema",
-    description:
-      "Specialized Low-Rank Adaptation (LoRA) for Stable Diffusion XL designed to synthesize authentic 1980s 35mm film grain, anamorphic flare, and vintage cinematography aesthetics.",
+    tagline: "Custom SDXL Diffusion LoRA",
+    description: "Specialized Low-Rank Adaptation (LoRA) for Stable Diffusion XL designed to synthesize authentic 1980s 35mm film grain, anamorphic flare, and vintage cinematography aesthetics.",
     stack: ["PyTorch", "SDXL", "Diffusers", "LoRA / PEFT", "Hugging Face"],
     links: [
       { label: "GitHub", href: "https://github.com/Ilyan321/Slasher-Vision-35mm" },
@@ -164,56 +182,16 @@ export const projects: Project[] = [
     ],
   },
   {
-    slug: "school-attendance-system",
-    name: "School Attendance Management System",
-    tagline: "Next.js 15 & TypeScript Enterprise Portal",
-    description:
-      "Multi-role school administration platform engineered with Next.js 15 App Router, React Server Components, Tailwind CSS, and structured PRD-driven modular architecture.",
-    stack: ["Next.js 15", "React 19", "TypeScript", "Tailwind CSS", "Supabase"],
-    links: [{ label: "GitHub", href: "https://github.com/Ilyan321/school-attendance-system" }],
-  },
-  {
-    slug: "ai-content-summarizer",
-    name: "AI Content Summarizer & Polyglot Translator",
-    tagline: "Automated Article Ingestion & 7-Language Synthesis",
-    description:
-      "Article scraping and synthesis platform extracting clean text from web URLs, generating multi-perspective summaries via Groq LLaMA-3, and translating into 7 global languages.",
-    stack: ["Python", "Streamlit", "Groq LLaMA 3", "BeautifulSoup4"],
-    links: [{ label: "GitHub", href: "https://github.com/Ilyan321/AI_Content_Summarizer" }],
-  },
-  {
-    slug: "weather-ai",
-    name: "Weather AI & Style Advisor",
-    tagline: "Sensory Weather Data + LLaMA 3.3 Reasoning",
-    description:
-      "Real-time meteorological utility combining OpenWeatherMap sensory feeds with Groq LLaMA 3.3 reasoning for climate-adaptive outfit and outdoor recommendations.",
-    stack: ["Python", "Streamlit", "Groq LLaMA 3.3", "OpenWeatherMap API"],
+    slug: "hogwarts-archivist",
+    name: "Hogwarts Archivist RAG",
+    tagline: "Source-Attributed Knowledge Chatbot",
+    description: "A source-attributed RAG chatbot for the Harry Potter universe, powered by LangChain, FAISS, Groq API, and Streamlit.",
+    stack: ["Python", "LangChain", "FAISS", "Groq LLaMA 3", "Streamlit"],
     links: [
-      { label: "GitHub", href: "https://github.com/Ilyan321/Weather_App" },
-      { label: "Live Space", href: "https://huggingface.co/spaces/Ilyankhan69/WeatherApp" },
+      { label: "GitHub", href: "https://github.com/Ilyan321/Hogwarts_Archivist" },
+      { label: "Live Demo", href: "https://huggingface.co/spaces/Ilyankhan69/Hogwarts-Archivist" },
     ],
-  },
-  {
-    slug: "whatsapp-web-clone",
-    name: "WhatsApp Web Clone & Webhook Backend",
-    tagline: "FastAPI Asynchronous Webhook Receiver",
-    description:
-      "High-performance FastAPI async backend on Vercel Serverless paired with a pixel-accurate WhatsApp Web client interface for real-time webhook routing.",
-    stack: ["Python", "FastAPI", "Vercel Serverless", "JavaScript"],
-    links: [
-      { label: "GitHub", href: "https://github.com/Ilyan321/whatsapp-clone" },
-      { label: "Live Demo", href: "https://whatsapp-clone-sigma-wheat.vercel.app" },
-    ],
-  },
-  {
-    slug: "student-expense-tracker",
-    name: "Student Expense & Budget Tracker",
-    tagline: "Real-Time Personal Finance Dashboard",
-    description:
-      "Interactive personal budgeting dashboard built with Python, Streamlit, and Altair charts for expenditure analytics, category breakdowns, and limit triggers.",
-    stack: ["Python", "Streamlit", "Altair Charts", "Pandas"],
-    links: [{ label: "GitHub", href: "https://github.com/Ilyan321/Student_Expense_Tracker" }],
-  },
+  }
 ];
 
 export const experience = [
