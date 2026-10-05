@@ -14,6 +14,7 @@ export function CertsAdmin({ initialCerts }: { initialCerts: any[] }) {
   const [newTitle, setNewTitle] = useState("");
   const [newIssuer, setNewIssuer] = useState("");
   const [newCredentialId, setNewCredentialId] = useState("");
+  const [newTag, setNewTag] = useState("");
   const [newDate, setNewDate] = useState("");
   const [newLink, setNewLink] = useState("");
   
@@ -43,6 +44,7 @@ export function CertsAdmin({ initialCerts }: { initialCerts: any[] }) {
     setNewTitle("");
     setNewIssuer("");
     setNewCredentialId("");
+    setNewTag("");
     setNewDate("");
     setNewLink("");
   }
@@ -52,15 +54,19 @@ export function CertsAdmin({ initialCerts }: { initialCerts: any[] }) {
     setEditingId(c.id);
     setNewTitle(c.title);
     
-    // Parse issuer and credential ID if we used the ||| trick
     let issuer = c.issuer || "";
     let credId = "";
+    let tag = "";
     if (issuer.includes("|||")) {
-      [issuer, credId] = issuer.split("|||").map((s: string) => s.trim());
+      const parts = issuer.split("|||").map((s: string) => s.trim());
+      issuer = parts[0] || "";
+      credId = parts[1] || "";
+      tag = parts[2] || "";
     }
     
     setNewIssuer(issuer);
     setNewCredentialId(credId);
+    setNewTag(tag);
     setNewDate(c.date);
     setNewLink(c.link || "");
   }
@@ -73,8 +79,7 @@ export function CertsAdmin({ initialCerts }: { initialCerts: any[] }) {
   async function handleSave(e: React.FormEvent, id?: string) {
     e.preventDefault();
     
-    // Combine issuer and credential ID
-    const combinedIssuer = newCredentialId ? `${newIssuer} ||| ${newCredentialId}` : newIssuer;
+    const combinedIssuer = `${newIssuer} ||| ${newCredentialId} ||| ${newTag}`;
     
     const data = { 
       title: newTitle, 
@@ -111,14 +116,18 @@ export function CertsAdmin({ initialCerts }: { initialCerts: any[] }) {
         <label className="font-mono-label text-[10px] uppercase tracking-widest" style={{ color: "var(--muted)" }}>Title</label>
         <input type="text" required value={newTitle} onChange={e => setNewTitle(e.target.value)} className="w-full font-body text-sm rounded-sm border p-3 outline-none transition-all focus:border-emerald-500" style={{ backgroundColor: "var(--bg)", borderColor: "var(--border)", color: "var(--ink)" }} />
       </div>
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
         <div className="space-y-1">
           <label className="font-mono-label text-[10px] uppercase tracking-widest" style={{ color: "var(--muted)" }}>Issuer</label>
           <input type="text" required value={newIssuer} onChange={e => setNewIssuer(e.target.value)} className="w-full font-body text-sm rounded-sm border p-3 outline-none transition-all focus:border-emerald-500" style={{ backgroundColor: "var(--bg)", borderColor: "var(--border)", color: "var(--ink)" }} />
         </div>
         <div className="space-y-1">
-          <label className="font-mono-label text-[10px] uppercase tracking-widest" style={{ color: "var(--muted)" }}>Credential ID (Optional)</label>
+          <label className="font-mono-label text-[10px] uppercase tracking-widest" style={{ color: "var(--muted)" }}>Credential ID</label>
           <input type="text" value={newCredentialId} onChange={e => setNewCredentialId(e.target.value)} placeholder="e.g. GCC-12345" className="w-full font-body text-sm rounded-sm border p-3 outline-none transition-all focus:border-emerald-500" style={{ backgroundColor: "var(--bg)", borderColor: "var(--border)", color: "var(--ink)" }} />
+        </div>
+        <div className="space-y-1">
+          <label className="font-mono-label text-[10px] uppercase tracking-widest" style={{ color: "var(--muted)" }}>Pill Tag</label>
+          <input type="text" value={newTag} onChange={e => setNewTag(e.target.value)} placeholder="e.g. Artificial Intelligence" className="w-full font-body text-sm rounded-sm border p-3 outline-none transition-all focus:border-emerald-500" style={{ backgroundColor: "var(--bg)", borderColor: "var(--border)", color: "var(--ink)" }} />
         </div>
       </div>
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -149,8 +158,12 @@ export function CertsAdmin({ initialCerts }: { initialCerts: any[] }) {
             {certs.map((cert) => {
               let displayIssuer = cert.issuer || "";
               let credId = "";
+              let tag = "";
               if (displayIssuer.includes("|||")) {
-                [displayIssuer, credId] = displayIssuer.split("|||").map((s: string) => s.trim());
+                const parts = displayIssuer.split("|||").map((s: string) => s.trim());
+                displayIssuer = parts[0] || "";
+                credId = parts[1] || "";
+                tag = parts[2] || "";
               }
 
               return (
@@ -163,7 +176,12 @@ export function CertsAdmin({ initialCerts }: { initialCerts: any[] }) {
                       style={{ borderColor: "var(--border)", backgroundColor: "var(--panel)" }}
                     >
                       <div className="flex-1 min-w-0 pr-4">
-                        <h3 className="font-display text-lg truncate" style={{ color: "var(--ink)" }}>{cert.title}</h3>
+                        <div className="flex items-center gap-2 flex-wrap">
+                          <h3 className="font-display text-lg truncate" style={{ color: "var(--ink)" }}>{cert.title}</h3>
+                          {tag && (
+                            <span className="font-mono-label text-[10px] border px-2 py-0.5 rounded-sm" style={{ borderColor: "var(--border)", color: "var(--muted)" }}>{tag}</span>
+                          )}
+                        </div>
                         <p className="font-mono-label text-xs tracking-wider uppercase mt-1" style={{ color: "var(--muted)" }}>
                           {displayIssuer} {credId && `// ID: ${credId}`} • {cert.date}
                         </p>
