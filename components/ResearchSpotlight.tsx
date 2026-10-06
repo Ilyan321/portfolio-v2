@@ -81,94 +81,118 @@ export default function ResearchSpotlight({ dbSpotlight }: { dbSpotlight?: any }
             )}
           </div>
 
-          {/* Diagnostic report layout: generative diagram + findings panel */}
+          {/* Diagnostic report layout: architectural pipeline + diagnostics findings panel */}
           <div
             id="research-report"
-            className="relative mt-16 grid grid-cols-1 gap-px overflow-hidden rounded-sm border md:grid-cols-2"
-            style={{ borderColor: "var(--border)" }}
+            className="relative mt-12 grid grid-cols-1 overflow-hidden rounded-sm border lg:grid-cols-12"
+            style={{ borderColor: "var(--border)", backgroundColor: "var(--panel)" }}
           >
             <ScanLine targetId="research-report" />
+
+            {/* Left Column: Interactive Architectural Pipeline Stream */}
             <div
-              className="relative flex h-64 items-center justify-center p-6 md:h-auto"
-              style={{ backgroundColor: "var(--panel)" }}
+              className="lg:col-span-6 border-b lg:border-b-0 lg:border-r p-6 sm:p-8 flex flex-col justify-between"
+              style={{ borderColor: "var(--border)" }}
             >
-              <ASTSecurityVisualizer />
-            </div>
-            <div className="p-8" style={{ backgroundColor: "var(--panel)" }}>
-              <div className="font-mono-label mb-4 text-[11px] uppercase tracking-wider" style={{ color: "var(--accent)" }}>
-                Architecture Diagnostics & Safeguards
-              </div>
-              <dl className="space-y-4">
-                {(spotlight.diagnostics || []).map((row: any, i: number) => (
-                  <div
-                    key={i}
-                    className="flex flex-col gap-1 border-t pt-3 sm:flex-row sm:items-baseline sm:justify-between sm:gap-4"
-                    style={{ borderColor: i === 0 ? "transparent" : "var(--border)" }}
-                  >
-                    <dt className="font-mono-label text-xs uppercase break-words" style={{ color: "var(--muted)" }}>
-                      {row.term}
-                    </dt>
-                    <dd className="font-mono-label text-xs sm:text-right break-words" style={{ color: "var(--ink)" }}>
-                      {row.value}
-                    </dd>
+              <div>
+                <div className="flex items-center justify-between font-mono-label text-[11px] uppercase tracking-wider mb-6">
+                  <span style={{ color: "var(--accent)" }}>Execution Pipeline Trace</span>
+                  <div className="flex items-center gap-1.5">
+                    <span className="relative flex h-2 w-2">
+                      <span className="absolute inline-flex h-full w-full animate-ping rounded-full opacity-60" style={{ backgroundColor: "#4ade80" }} />
+                      <span className="relative inline-flex h-2 w-2 rounded-full" style={{ backgroundColor: "#4ade80" }} />
+                    </span>
+                    <span className="text-[10px] text-muted">Firewall Active</span>
                   </div>
-                ))}
-              </dl>
+                </div>
+
+                {/* Pipeline Flow Nodes */}
+                <div className="space-y-3 font-mono-label text-xs">
+                  <div className="rounded-sm border p-3" style={{ borderColor: "var(--border)", backgroundColor: "var(--bg)" }}>
+                    <div className="flex items-center justify-between text-[10px] text-muted uppercase">
+                      <span>Step 01 // User Intent Ingestion</span>
+                      <span className="text-accent">Input</span>
+                    </div>
+                    <div className="mt-1 font-mono text-ink text-[12px]">
+                      &quot;List top 5 users sorted by transaction volume&quot;
+                    </div>
+                  </div>
+
+                  <div className="flex justify-center text-muted text-[10px]">↓ Tokenization & QLoRA Matrix</div>
+
+                  <div className="rounded-sm border p-3" style={{ borderColor: "var(--border)", backgroundColor: "var(--bg)" }}>
+                    <div className="flex items-center justify-between text-[10px] text-muted uppercase">
+                      <span>Step 02 // Neural SQL Generator</span>
+                      <span className="text-accent">LLaMA-3 8B</span>
+                    </div>
+                    <div className="mt-1 font-mono text-[11px] text-ink opacity-90">
+                      SELECT u.name, SUM(t.amt) FROM users u JOIN trans t ...
+                    </div>
+                  </div>
+
+                  <div className="flex justify-center text-accent font-semibold text-[10px]">↓ Python AST Security Interceptor</div>
+
+                  <div className="rounded-sm border p-3 border-accent/40" style={{ borderColor: "var(--accent)", backgroundColor: "var(--bg)" }}>
+                    <div className="flex items-center justify-between text-[10px] uppercase font-bold" style={{ color: "var(--accent)" }}>
+                      <span>Step 03 // Deterministic AST Guard</span>
+                      <span className="px-1.5 py-0.5 rounded text-[9px] bg-accent/10 border border-accent/30 text-accent">MUTATION SAFETY: 100%</span>
+                    </div>
+                    <div className="mt-1 font-mono text-[11px] text-muted">
+                      Blocks DROP, DELETE, ALTER, UNION INJECTION before execution
+                    </div>
+                  </div>
+
+                  <div className="flex justify-center text-muted text-[10px]">↓ Verified Read-Only Stream</div>
+
+                  <div className="rounded-sm border p-3" style={{ borderColor: "var(--border)", backgroundColor: "var(--bg)" }}>
+                    <div className="flex items-center justify-between text-[10px] text-muted uppercase">
+                      <span>Step 04 // SQLite Execution Sandbox</span>
+                      <span className="text-accent">Output Ready</span>
+                    </div>
+                    <div className="mt-1 font-mono text-ink text-[12px]">
+                      Sub-millisecond query results returned to client safely
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <div className="mt-6 pt-4 border-t flex items-center justify-between font-mono-label text-[11px] text-muted" style={{ borderColor: "var(--border)" }}>
+                <span>Inference Latency: &lt;45ms</span>
+                <span>Spider Join Val: 84.2%</span>
+              </div>
+            </div>
+
+            {/* Right Column: Architectural Diagnostics Table */}
+            <div className="lg:col-span-6 p-6 sm:p-8 flex flex-col justify-between">
+              <div>
+                <div className="font-mono-label mb-6 text-[11px] uppercase tracking-wider" style={{ color: "var(--accent)" }}>
+                  Architecture Diagnostics & Safeguards
+                </div>
+                <dl className="space-y-4">
+                  {(spotlight.diagnostics || []).map((row: any, i: number) => (
+                    <div
+                      key={i}
+                      className="flex flex-col gap-1 border-t pt-3 sm:flex-row sm:items-baseline sm:justify-between sm:gap-4"
+                      style={{ borderColor: i === 0 ? "transparent" : "var(--border)" }}
+                    >
+                      <dt className="font-mono-label text-xs uppercase break-words text-muted">
+                        {row.term}
+                      </dt>
+                      <dd className="font-mono-label text-xs sm:text-right break-words text-ink font-medium">
+                        {row.value}
+                      </dd>
+                    </div>
+                  ))}
+                </dl>
+              </div>
+
+              <div className="mt-8 pt-4 border-t font-mono-label text-[11px] text-muted" style={{ borderColor: "var(--border)" }}>
+                Production-grade architecture fine-tuned for high accuracy on relational databases.
+              </div>
             </div>
           </div>
         </div>
       </ScrollReveal>
     </section>
-  );
-}
-
-function ASTSecurityVisualizer() {
-  return (
-    <svg
-      viewBox="0 0 320 240"
-      className="h-full w-full"
-      role="img"
-      aria-label="Abstract AST Security Firewall Pipeline Diagram"
-    >
-      <defs>
-        <radialGradient id="astCore" cx="50%" cy="50%" r="60%">
-          <stop offset="0%" stopColor="var(--accent)" stopOpacity="0.4" />
-          <stop offset="100%" stopColor="var(--accent)" stopOpacity="0" />
-        </radialGradient>
-      </defs>
-      <rect width="320" height="240" fill="var(--panel)" />
-      <circle cx="160" cy="120" r="85" fill="url(#astCore)" />
-      
-      {/* Node network simulating AST Parser tree */}
-      <circle cx="160" cy="40" r="12" fill="var(--accent)" />
-      <circle cx="90" cy="110" r="9" fill="var(--border)" />
-      <circle cx="230" cy="110" r="9" fill="var(--border)" />
-      <circle cx="60" cy="180" r="7" fill="var(--muted)" />
-      <circle cx="120" cy="180" r="7" fill="var(--accent)" />
-      <circle cx="200" cy="180" r="7" fill="var(--accent)" />
-      <circle cx="260" cy="180" r="7" fill="var(--muted)" />
-
-      {/* Connection branches */}
-      <line x1="160" y1="40" x2="90" y2="110" stroke="var(--border)" strokeWidth="1.5" />
-      <line x1="160" y1="40" x2="230" y2="110" stroke="var(--border)" strokeWidth="1.5" />
-      <line x1="90" y1="110" x2="60" y2="180" stroke="var(--border)" strokeWidth="1" strokeDasharray="3 3" />
-      <line x1="90" y1="110" x2="120" y2="180" stroke="var(--accent)" strokeWidth="1.5" />
-      <line x1="230" y1="110" x2="200" y2="180" stroke="var(--accent)" strokeWidth="1.5" />
-      <line x1="230" y1="110" x2="260" y2="180" stroke="var(--border)" strokeWidth="1" strokeDasharray="3 3" />
-
-      {/* Grid crosshairs */}
-      {Array.from({ length: 7 }).map((_, i) => (
-        <line
-          key={`h-${i}`}
-          x1="0"
-          x2="320"
-          y1={i * 35 + 15}
-          y2={i * 35 + 15}
-          stroke="var(--border)"
-          strokeWidth="0.5"
-          opacity="0.25"
-        />
-      ))}
-    </svg>
   );
 }

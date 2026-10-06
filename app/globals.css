@@ -33,11 +33,11 @@
 
 .light {
   --bg: #dbf1de;
-  --panel: #FFFFFF;
-  --border: #D1E0D7;
-  --accent: #153832;
-  --ink: #051F20;
-  --muted: #4A6763;
+  --panel: #e5f5e7;
+  --border: #bedbc2;
+  --accent: #1e3a24;
+  --ink: #0f1c12;
+  --muted: #4e6b54;
 }
 
 * {
