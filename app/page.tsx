@@ -86,8 +86,8 @@ export default async function Home() {
           dbEducation={educationData}
           dbTechStack={techStackData}
         />
-        <Projects dbProjects={dbProjects} />
         <ResearchSpotlight dbSpotlight={spotlightData} />
+        <Projects dbProjects={dbProjects} />
         <Experience dbExperience={experienceData} />
         <Certificates dbCerts={dbCerts} />
         <Contact dbProfile={profileData} />
