@@ -16,6 +16,10 @@ export function middleware(request: NextRequest) {
 
   if (isAdminRoute) {
     if (request.nextUrl.pathname === '/admin/login') {
+      const token = request.cookies.get('admin_token')?.value;
+      if (token === 'authenticated') {
+        return NextResponse.redirect(new URL('/admin', request.url));
+      }
       return NextResponse.next();
     }
     const token = request.cookies.get('admin_token')?.value;

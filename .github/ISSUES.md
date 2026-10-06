@@ -15,11 +15,10 @@
 ---
 
 ### Issue #2: Admin Dashboard Authentication Session Expiration & Auto-Logout
-- **Status:** Ready for Implementation
+- **Status:** Resolved
 - **Description:**
   Currently, `/admin` directly opens without prompting for credentials across sessions because `app/api/auth/login/route.ts` sets `maxAge: 60 * 60 * 24 * 7` (1 week persistent cookie).
-- **Resolution Plan:**
-  1. Remove `maxAge` from `admin_token` cookie in `app/api/auth/login/route.ts` to convert it into a strict **Session Cookie** (automatically invalidated upon browser window close).
-  2. Implement an optional idle timeout or JWT expiry check in `middleware.ts`.
-  3. Ensure `/admin/login` enforces proper redirect upon session expiration.
+- **Resolution:**
+  1. Converted `admin_token` into a strict Session Cookie by removing `maxAge` in `app/api/auth/login/route.ts` (invalidated when browser session closes).
+  2. Updated `middleware.ts` to redirect authenticated sessions from `/admin/login` directly to `/admin`.
 
