@@ -84,70 +84,87 @@ export async function updateCert(id: string, data: any) {
 // ----------------------------------------------------
 
 export async function fetchGitHubRepos() {
-  checkAuth();
-  const ghToken = process.env.GITHUB_TOKEN;
-  if (!ghToken) {
-    throw new Error("Missing GITHUB_TOKEN in environment.");
+  try {
+    checkAuth();
+    const ghToken = process.env.GITHUB_TOKEN;
+    if (!ghToken) {
+      return {
+        success: false,
+        error: "Missing GITHUB_TOKEN environment variable on Vercel. Please add GITHUB_TOKEN in your Vercel Dashboard (Settings > Environment Variables) and redeploy.",
+      };
+    }
+    const res = await fetch("https://api.github.com/user/repos?per_page=100&sort=updated", {
+      headers: {
+        Authorization: `Bearer ${ghToken}`,
+        Accept: "application/vnd.github.v3+json",
+        "User-Agent": "IlyanOS-Admin",
+      },
+      cache: "no-store",
+    });
+    if (!res.ok) {
+      const errText = await res.text();
+      return { success: false, error: `GitHub API error ${res.status}: ${errText || res.statusText}` };
+    }
+    const repos = await res.json();
+    const formatted = repos.map((r: any) => ({
+      id: r.id,
+      name: r.name,
+      full_name: r.full_name,
+      private: r.private,
+      description: r.description || "No description provided.",
+      html_url: r.html_url,
+      default_branch: r.default_branch,
+      updated_at: r.updated_at,
+    }));
+    return { success: true, repos: formatted };
+  } catch (err: any) {
+    return { success: false, error: err.message || "Failed to fetch GitHub repositories." };
   }
-  const res = await fetch("https://api.github.com/user/repos?per_page=100&sort=updated", {
-    headers: {
-      Authorization: `Bearer ${ghToken}`,
-      Accept: "application/vnd.github.v3+json",
-      "User-Agent": "IlyanOS-Admin",
-    },
-    cache: "no-store",
-  });
-  if (!res.ok) {
-    throw new Error(`GitHub API error: ${res.status} ${res.statusText}`);
-  }
-  const repos = await res.json();
-  return repos.map((r: any) => ({
-    id: r.id,
-    name: r.name,
-    full_name: r.full_name,
-    private: r.private,
-    description: r.description || "No description provided.",
-    html_url: r.html_url,
-    default_branch: r.default_branch,
-    updated_at: r.updated_at,
-  }));
 }
 
 export async function fetchIndexedDocuments() {
-  checkAuth();
-  const { data, error } = await supabaseAdmin
-    .from("portfolio_documents")
-    .select("id, project_slug, chunk_text");
-  
-  if (error) {
-    throw new Error(error.message);
-  }
-  
-  const summary: Record<string, { slug: string; chunkCount: number; sample: string }> = {};
-  for (const doc of data || []) {
-    const slug = doc.project_slug;
-    if (!summary[slug]) {
-      summary[slug] = {
-        slug,
-        chunkCount: 0,
-        sample: doc.chunk_text ? doc.chunk_text.slice(0, 150) + "..." : "",
-      };
+  try {
+    checkAuth();
+    const { data, error } = await supabaseAdmin
+      .from("portfolio_documents")
+      .select("id, project_slug, chunk_text");
+    
+    if (error) {
+      return { success: false, error: `Supabase query error: ${error.message}` };
     }
-    summary[slug].chunkCount += 1;
+    
+    const summary: Record<string, { slug: string; chunkCount: number; sample: string }> = {};
+    for (const doc of data || []) {
+      const slug = doc.project_slug;
+      if (!summary[slug]) {
+        summary[slug] = {
+          slug,
+          chunkCount: 0,
+          sample: doc.chunk_text ? doc.chunk_text.slice(0, 150) + "..." : "",
+        };
+      }
+      summary[slug].chunkCount += 1;
+    }
+    
+    return { success: true, docs: Object.values(summary) };
+  } catch (err: any) {
+    return { success: false, error: err.message || "Failed to fetch indexed documents." };
   }
-  
-  return Object.values(summary);
 }
 
 export async function deleteIndexedRepo(slug: string) {
-  checkAuth();
-  const { error } = await supabaseAdmin
-    .from("portfolio_documents")
-    .delete()
-    .eq("project_slug", slug);
-  if (error) throw new Error(error.message);
-  revalidatePath("/admin");
-  return { success: true };
+  try {
+    checkAuth();
+    const { error } = await supabaseAdmin
+      .from("portfolio_documents")
+      .delete()
+      .eq("project_slug", slug);
+    if (error) return { success: false, error: error.message };
+    revalidatePath("/admin");
+    return { success: true };
+  } catch (err: any) {
+    return { success: false, error: err.message };
+  }
 }
 
 function chunkText(text: string, chunkSize = 1000, overlap = 200): string[] {
@@ -179,61 +196,69 @@ async function getEmbeddingsBatch(texts: string[], hfToken: string): Promise<num
 }
 
 export async function ingestGitHubRepo(repoFullName: string, customSlug?: string) {
-  checkAuth();
-  const ghToken = process.env.GITHUB_TOKEN;
-  const hfToken = process.env.HF_TOKEN;
+  try {
+    checkAuth();
+    const ghToken = process.env.GITHUB_TOKEN;
+    const hfToken = process.env.HF_TOKEN;
 
-  if (!ghToken) throw new Error("Missing GITHUB_TOKEN in environment.");
-  if (!hfToken) throw new Error("Missing HF_TOKEN in environment.");
-
-  // Fetch README from GitHub API
-  const readmeRes = await fetch(`https://api.github.com/repos/${repoFullName}/readme`, {
-    headers: {
-      Authorization: `Bearer ${ghToken}`,
-      Accept: "application/vnd.github.v3.raw",
-      "User-Agent": "IlyanOS-Admin",
-    },
-    cache: "no-store",
-  });
-
-  if (!readmeRes.ok) {
-    if (readmeRes.status === 404) {
-      throw new Error(`No README found in repository ${repoFullName}`);
+    if (!ghToken) {
+      return { success: false, error: "Missing GITHUB_TOKEN on Vercel. Please add GITHUB_TOKEN to Vercel Environment Variables." };
     }
-    throw new Error(`GitHub API Error: ${readmeRes.status} ${readmeRes.statusText}`);
-  }
-
-  const readmeContent = await readmeRes.text();
-  if (!readmeContent || readmeContent.trim().length === 0) {
-    throw new Error(`README is empty for ${repoFullName}`);
-  }
-
-  const slug = customSlug || repoFullName.split("/")[1] || repoFullName;
-  const chunks = chunkText(readmeContent);
-
-  // Ingest in batches of 4
-  const rows: { project_slug: string; chunk_text: string; embedding: number[] }[] = [];
-  for (let i = 0; i < chunks.length; i += 4) {
-    const batch = chunks.slice(i, i + 4);
-    const embeddings = await getEmbeddingsBatch(batch, hfToken);
-    for (let j = 0; j < batch.length; j++) {
-      rows.push({
-        project_slug: slug,
-        chunk_text: batch[j],
-        embedding: embeddings[j],
-      });
+    if (!hfToken) {
+      return { success: false, error: "Missing HF_TOKEN on Vercel. Please add HF_TOKEN to Vercel Environment Variables." };
     }
+
+    // Fetch README from GitHub API
+    const readmeRes = await fetch(`https://api.github.com/repos/${repoFullName}/readme`, {
+      headers: {
+        Authorization: `Bearer ${ghToken}`,
+        Accept: "application/vnd.github.v3.raw",
+        "User-Agent": "IlyanOS-Admin",
+      },
+      cache: "no-store",
+    });
+
+    if (!readmeRes.ok) {
+      if (readmeRes.status === 404) {
+        return { success: false, error: `No README found in repository ${repoFullName}` };
+      }
+      return { success: false, error: `GitHub API Error: ${readmeRes.status} ${readmeRes.statusText}` };
+    }
+
+    const readmeContent = await readmeRes.text();
+    if (!readmeContent || readmeContent.trim().length === 0) {
+      return { success: false, error: `README is empty for ${repoFullName}` };
+    }
+
+    const slug = customSlug || repoFullName.split("/")[1] || repoFullName;
+    const chunks = chunkText(readmeContent);
+
+    // Ingest in batches of 4
+    const rows: { project_slug: string; chunk_text: string; embedding: number[] }[] = [];
+    for (let i = 0; i < chunks.length; i += 4) {
+      const batch = chunks.slice(i, i + 4);
+      const embeddings = await getEmbeddingsBatch(batch, hfToken);
+      for (let j = 0; j < batch.length; j++) {
+        rows.push({
+          project_slug: slug,
+          chunk_text: batch[j],
+          embedding: embeddings[j],
+        });
+      }
+    }
+
+    // Delete previous vectors for this slug
+    await supabaseAdmin.from("portfolio_documents").delete().eq("project_slug", slug);
+
+    // Insert new vectors
+    const { error: insertErr } = await supabaseAdmin.from("portfolio_documents").insert(rows);
+    if (insertErr) {
+      return { success: false, error: `Supabase vector insert error: ${insertErr.message}` };
+    }
+
+    revalidatePath("/admin");
+    return { success: true, slug, chunksCount: rows.length };
+  } catch (err: any) {
+    return { success: false, error: err.message || "Unknown error during ingestion." };
   }
-
-  // Delete previous vectors for this slug
-  await supabaseAdmin.from("portfolio_documents").delete().eq("project_slug", slug);
-
-  // Insert new vectors
-  const { error: insertErr } = await supabaseAdmin.from("portfolio_documents").insert(rows);
-  if (insertErr) {
-    throw new Error(`Supabase vector insert error: ${insertErr.message}`);
-  }
-
-  revalidatePath("/admin");
-  return { success: true, slug, chunksCount: rows.length };
 }

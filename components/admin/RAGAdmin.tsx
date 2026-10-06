@@ -38,7 +38,12 @@ export function RAGAdmin({ initialIndexedDocs }: { initialIndexedDocs: IndexedDo
     async function loadRepos() {
       try {
         setLoadingRepos(true);
-        const data = await fetchGitHubRepos();
+        const res = await fetchGitHubRepos();
+        if (!res.success) {
+          addLog(`[ERROR] ${res.error}`);
+          return;
+        }
+        const data = res.repos || [];
         setRepos(data);
         if (data.length > 0) {
           setSelectedRepo(data[0].full_name);
@@ -77,11 +82,17 @@ export function RAGAdmin({ initialIndexedDocs }: { initialIndexedDocs: IndexedDo
       addLog(`[INGEST] Slicing into chunks & generating 384d vectors via Hugging Face...`);
 
       const result = await ingestGitHubRepo(selectedRepo, slugToUse);
+      if (!result.success) {
+        addLog(`[ERROR] Ingestion failed: ${result.error}`);
+        return;
+      }
       addLog(`[SUCCESS] ✅ Injected ${result.chunksCount} vectors into pgvector for '${result.slug}'!`);
 
       // Refresh indexed docs
       const updated = await fetchIndexedDocuments();
-      setIndexedDocs(updated);
+      if (updated.success && updated.docs) {
+        setIndexedDocs(updated.docs);
+      }
     } catch (err: any) {
       addLog(`[ERROR] Ingestion failed: ${err.message}`);
     } finally {
@@ -93,10 +104,16 @@ export function RAGAdmin({ initialIndexedDocs }: { initialIndexedDocs: IndexedDo
     if (!confirm(`Are you sure you want to purge all vector chunks for '${slug}'?`)) return;
     try {
       addLog(`[PURGE] Deleting vector records for '${slug}'...`);
-      await deleteIndexedRepo(slug);
+      const res = await deleteIndexedRepo(slug);
+      if (!res.success) {
+        addLog(`[ERROR] Delete failed: ${res.error}`);
+        return;
+      }
       addLog(`[SUCCESS] Purged vectors for '${slug}'.`);
       const updated = await fetchIndexedDocuments();
-      setIndexedDocs(updated);
+      if (updated.success && updated.docs) {
+        setIndexedDocs(updated.docs);
+      }
     } catch (err: any) {
       addLog(`[ERROR] Delete failed: ${err.message}`);
     }
@@ -115,9 +132,15 @@ export function RAGAdmin({ initialIndexedDocs }: { initialIndexedDocs: IndexedDo
       setIsIngesting(true);
       addLog(`[RE-SYNC] Fetching and re-embedding ${match.full_name} for '${slug}'...`);
       const result = await ingestGitHubRepo(match.full_name, slug);
+      if (!result.success) {
+        addLog(`[ERROR] Re-sync failed: ${result.error}`);
+        return;
+      }
       addLog(`[SUCCESS] ✅ Re-indexed ${result.chunksCount} vectors for '${result.slug}'!`);
       const updated = await fetchIndexedDocuments();
-      setIndexedDocs(updated);
+      if (updated.success && updated.docs) {
+        setIndexedDocs(updated.docs);
+      }
     } catch (err: any) {
       addLog(`[ERROR] Re-sync failed: ${err.message}`);
     } finally {
@@ -292,8 +315,12 @@ export function RAGAdmin({ initialIndexedDocs }: { initialIndexedDocs: IndexedDo
           <button
             onClick={async () => {
               const updated = await fetchIndexedDocuments();
-              setIndexedDocs(updated);
-              addLog(`[REFRESH] Updated knowledge base summary.`);
+              if (updated.success && updated.docs) {
+                setIndexedDocs(updated.docs);
+                addLog(`[REFRESH] Updated knowledge base summary.`);
+              } else {
+                addLog(`[ERROR] Refresh failed: ${updated.error}`);
+              }
             }}
             className="font-mono-label text-[11px] uppercase tracking-wider px-3 py-1.5 border rounded-sm transition-colors cursor-pointer hover:bg-white/[0.02]"
             style={{ borderColor: "var(--border)", color: "var(--ink)" }}
