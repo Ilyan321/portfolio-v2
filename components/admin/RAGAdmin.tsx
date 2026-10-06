@@ -23,6 +23,7 @@ interface IndexedDoc {
 
 export function RAGAdmin({ initialIndexedDocs }: { initialIndexedDocs: IndexedDoc[] }) {
   const [repos, setRepos] = useState<GitHubRepo[]>([]);
+  const [repoMap, setRepoMap] = useState<Record<string, string>>({});
   const [indexedDocs, setIndexedDocs] = useState<IndexedDoc[]>(initialIndexedDocs);
   const [loadingRepos, setLoadingRepos] = useState(true);
   const [searchQuery, setSearchQuery] = useState("");
@@ -35,32 +36,91 @@ export function RAGAdmin({ initialIndexedDocs }: { initialIndexedDocs: IndexedDo
   ]);
 
   useEffect(() => {
-    async function loadRepos() {
+    async function loadInitialData() {
       try {
         setLoadingRepos(true);
-        const res = await fetchGitHubRepos();
-        if (!res.success) {
-          addLog(`[ERROR] ${res.error}`);
+        const [repoRes, docsRes] = await Promise.all([
+          fetchGitHubRepos(),
+          fetchIndexedDocuments(),
+        ]);
+
+        if (docsRes.success) {
+          if (docsRes.docs) setIndexedDocs(docsRes.docs);
+          if (docsRes.repoMap) setRepoMap(docsRes.repoMap);
+        }
+
+        if (!repoRes.success) {
+          addLog(`[ERROR] ${repoRes.error}`);
           return;
         }
-        const data = res.repos || [];
+        const data = repoRes.repos || [];
         setRepos(data);
         if (data.length > 0) {
           setSelectedRepo(data[0].full_name);
           setCustomSlug(data[0].name);
         }
       } catch (err: any) {
-        addLog(`[ERROR] Failed to load GitHub repositories: ${err.message}`);
+        addLog(`[ERROR] Failed to load data: ${err.message}`);
       } finally {
         setLoadingRepos(false);
       }
     }
-    loadRepos();
+    loadInitialData();
   }, []);
 
   function addLog(msg: string) {
     const timestamp = new Date().toLocaleTimeString();
     setLogs((prev) => [`[${timestamp}] ${msg}`, ...prev.slice(0, 49)]);
+  }
+
+  function findMatchingRepo(slug: string, repoList: GitHubRepo[], currentRepoMap: Record<string, string>): GitHubRepo | undefined {
+    // 1. Check explicit map from portfolio v2_projects
+    if (currentRepoMap[slug]) {
+      const mappedFullName = currentRepoMap[slug].toLowerCase();
+      const mappedRepoName = mappedFullName.split("/").pop();
+      const match = repoList.find(
+        (r) => r.full_name.toLowerCase() === mappedFullName || r.name.toLowerCase() === mappedRepoName
+      );
+      if (match) return match;
+    }
+
+    const normalize = (str: string) =>
+      str
+        .replace(/Æ/gi, "AE")
+        .replace(/[^a-zA-Z0-9]/g, "")
+        .toLowerCase();
+
+    const cleanSlug = normalize(slug);
+
+    // 2. Direct exact match (name or full_name)
+    const exact = repoList.find(
+      (r) => r.name.toLowerCase() === slug.toLowerCase() || r.full_name.toLowerCase() === slug.toLowerCase()
+    );
+    if (exact) return exact;
+
+    // 3. Normalized alphanumeric match (handles "HaqDar (حقدار)" -> "haqdar" matching "haqdar")
+    const normMatch = repoList.find((r) => {
+      const cleanName = normalize(r.name);
+      return cleanName === cleanSlug || (cleanSlug.length > 2 && (cleanName.includes(cleanSlug) || cleanSlug.includes(cleanName)));
+    });
+    if (normMatch) return normMatch;
+
+    // 4. Token-based word match (e.g. "Hogwarts Archivist RAG" matches "Hogwarts_Archivist")
+    const words = slug
+      .replace(/Æ/gi, "AE")
+      .split(/[^a-zA-Z0-9]+/)
+      .filter((w) => w.length > 2)
+      .map((w) => w.toLowerCase());
+
+    if (words.length > 0) {
+      const tokenMatch = repoList.find((r) => {
+        const repoWords = r.name.toLowerCase().split(/[^a-zA-Z0-9]+/);
+        return words.some((w) => repoWords.includes(w) || r.name.toLowerCase().includes(w));
+      });
+      if (tokenMatch) return tokenMatch;
+    }
+
+    return undefined;
   }
 
   const filteredRepos = repos.filter(
@@ -92,6 +152,7 @@ export function RAGAdmin({ initialIndexedDocs }: { initialIndexedDocs: IndexedDo
       const updated = await fetchIndexedDocuments();
       if (updated.success && updated.docs) {
         setIndexedDocs(updated.docs);
+        if (updated.repoMap) setRepoMap(updated.repoMap);
       }
     } catch (err: any) {
       addLog(`[ERROR] Ingestion failed: ${err.message}`);
@@ -113,6 +174,7 @@ export function RAGAdmin({ initialIndexedDocs }: { initialIndexedDocs: IndexedDo
       const updated = await fetchIndexedDocuments();
       if (updated.success && updated.docs) {
         setIndexedDocs(updated.docs);
+        if (updated.repoMap) setRepoMap(updated.repoMap);
       }
     } catch (err: any) {
       addLog(`[ERROR] Delete failed: ${err.message}`);
@@ -120,26 +182,27 @@ export function RAGAdmin({ initialIndexedDocs }: { initialIndexedDocs: IndexedDo
   }
 
   async function handleQuickReingest(slug: string) {
-    // Find matching repo in repos list
-    const match = repos.find(
-      (r) => r.name.toLowerCase() === slug.toLowerCase() || r.full_name.toLowerCase().includes(slug.toLowerCase())
-    );
+    const match = findMatchingRepo(slug, repos, repoMap);
     if (!match) {
-      addLog(`[WARN] Could not find GitHub repository for slug '${slug}'. Please select it from the dropdown.`);
+      // Auto prefill form for convenience
+      setCustomSlug(slug);
+      window.scrollTo({ top: 0, behavior: "smooth" });
+      addLog(`[WARN] Could not auto-detect repo for '${slug}'. Pre-filled slug above — please select repository from dropdown & click Ingest.`);
       return;
     }
     try {
       setIsIngesting(true);
-      addLog(`[RE-SYNC] Fetching and re-embedding ${match.full_name} for '${slug}'...`);
+      addLog(`[RE-SYNC] Matched '${slug}' to GitHub repo '${match.full_name}'. Slicing & vectorizing README...`);
       const result = await ingestGitHubRepo(match.full_name, slug);
       if (!result.success) {
         addLog(`[ERROR] Re-sync failed: ${result.error}`);
         return;
       }
-      addLog(`[SUCCESS] ✅ Re-indexed ${result.chunksCount} vectors for '${result.slug}'!`);
+      addLog(`[SUCCESS] ✅ Re-indexed ${result.chunksCount} vectors for '${result.slug}' from ${match.full_name}!`);
       const updated = await fetchIndexedDocuments();
       if (updated.success && updated.docs) {
         setIndexedDocs(updated.docs);
+        if (updated.repoMap) setRepoMap(updated.repoMap);
       }
     } catch (err: any) {
       addLog(`[ERROR] Re-sync failed: ${err.message}`);

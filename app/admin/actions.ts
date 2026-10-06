@@ -145,8 +145,29 @@ export async function fetchIndexedDocuments() {
       }
       summary[slug].chunkCount += 1;
     }
+
+    // Query v2_projects to map portfolio titles to their GitHub repos
+    const repoMap: Record<string, string> = {};
+    try {
+      const { data: projectData } = await supabaseAdmin
+        .from("v2_projects")
+        .select("title, github");
+
+      for (const p of projectData || []) {
+        if (p.title && p.github) {
+          const cleanUrl = p.github.replace(/\/$/, "");
+          const parts = cleanUrl.split("/");
+          if (parts.length >= 2) {
+            const repoFullName = parts.slice(-2).join("/");
+            repoMap[p.title] = repoFullName;
+          }
+        }
+      }
+    } catch {
+      // Non-fatal if v2_projects fetch fails
+    }
     
-    return { success: true, docs: Object.values(summary) };
+    return { success: true, docs: Object.values(summary), repoMap };
   } catch (err: any) {
     return { success: false, error: err.message || "Failed to fetch indexed documents." };
   }
