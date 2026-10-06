@@ -17,16 +17,16 @@ export function SortableItem(props: any) {
   };
 
   return (
-    <div ref={setNodeRef} style={style} className="flex gap-4 items-center">
+    <div ref={setNodeRef} style={style} className="flex gap-4 items-center w-full min-w-0">
       <div 
         {...attributes} 
         {...listeners} 
-        className="cursor-grab active:cursor-grabbing p-4 border rounded-sm transition-colors hover:bg-white/[0.02]"
+        className="cursor-grab active:cursor-grabbing p-4 border rounded-sm transition-colors hover:bg-white/[0.02] flex-shrink-0"
         style={{ borderColor: "var(--border)", backgroundColor: "var(--panel)", color: "var(--muted)" }}
       >
         ≡
       </div>
-      <div className="flex-grow">
+      <div className="flex-grow min-w-0 w-full">
         {props.children}
       </div>
     </div>

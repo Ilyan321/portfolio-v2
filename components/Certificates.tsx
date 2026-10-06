@@ -61,20 +61,20 @@ export default function Certificates({ dbCerts }: { dbCerts?: any[] }) {
               return (
                 <li
                   key={cert.id || idx}
-                  className="group flex flex-col gap-2 border-l-2 pl-5 sm:flex-row sm:items-baseline sm:justify-between transition-colors hover:border-accent"
+                  className="group flex flex-col gap-2 border-l-2 pl-5 sm:flex-row sm:items-baseline sm:justify-between transition-colors hover:border-accent w-full min-w-0"
                   style={{ borderColor: "var(--border)" }}
                 >
-                  <div className="space-y-1">
+                  <div className="space-y-1 min-w-0 flex-1">
                     <div className="flex items-center gap-2.5 flex-wrap">
                       <span
-                        className="font-mono-label text-sm font-medium transition-colors group-hover:text-accent"
+                        className="font-mono-label text-sm font-medium transition-colors group-hover:text-accent break-words"
                         style={{ color: "var(--ink)" }}
                       >
                         {cert.title}
                       </span>
                       {tag && (
                         <span
-                          className="font-mono-label text-[10px] uppercase tracking-wider px-1.5 py-0.5 rounded border"
+                          className="font-mono-label text-[10px] uppercase tracking-wider px-1.5 py-0.5 rounded border flex-shrink-0"
                           style={{
                             borderColor: "var(--border)",
                             color: "var(--muted)",
@@ -86,7 +86,7 @@ export default function Certificates({ dbCerts }: { dbCerts?: any[] }) {
                       )}
                     </div>
                     <div
-                      className="font-mono-label text-xs"
+                      className="font-mono-label text-xs break-words"
                       style={{ color: "var(--muted)" }}
                     >
                       {displayIssuer} {credId ? `· ID: ${credId}` : ""}

@@ -169,28 +169,28 @@ export function ProjectsAdmin({ initialProjects }: { initialProjects: any[] }) {
                     renderForm(project.id)
                   ) : (
                     <div 
-                      className="flex flex-col sm:flex-row justify-between items-start sm:items-center p-5 rounded-sm border"
+                      className="flex flex-col sm:flex-row justify-between items-start sm:items-center p-4 sm:p-5 rounded-sm border w-full min-w-0 gap-4"
                       style={{ borderColor: "var(--border)", backgroundColor: "var(--panel)" }}
                     >
-                      <div className="flex-1 min-w-0 pr-4">
+                      <div className="flex-1 min-w-0 w-full">
                         <div className="flex items-center gap-3 flex-wrap">
-                          <h3 className="font-display text-lg" style={{ color: "var(--ink)" }}>{titleStr}</h3>
+                          <h3 className="font-display text-lg break-words" style={{ color: "var(--ink)" }}>{titleStr}</h3>
                           {taglineStr && (
-                            <span className="font-mono-label text-xs uppercase tracking-wider" style={{ color: "var(--muted)" }}>{taglineStr}</span>
+                            <span className="font-mono-label text-xs uppercase tracking-wider break-words" style={{ color: "var(--muted)" }}>{taglineStr}</span>
                           )}
                         </div>
-                        <p className="text-sm mt-1 whitespace-pre-wrap break-words" style={{ color: "var(--muted)" }}>{project.description}</p>
+                        <p className="text-sm mt-1 whitespace-pre-wrap break-words opacity-80" style={{ color: "var(--muted)" }}>{project.description}</p>
                         <div className="flex flex-wrap gap-2 mt-3">
                           {(project.tags || []).map((t: string) => (
-                             <span key={t} className="font-mono-label text-[10px] border px-2 py-0.5 rounded-sm" style={{ borderColor: "var(--border)", color: "var(--muted)" }}>{t}</span>
+                             <span key={t} className="font-mono-label text-[10px] border px-2 py-0.5 rounded-sm flex-shrink-0" style={{ borderColor: "var(--border)", color: "var(--muted)" }}>{t}</span>
                           ))}
                         </div>
                       </div>
-                      <div className="mt-4 sm:mt-0 flex-shrink-0 flex gap-2 self-start">
-                        <button onClick={() => startEditing(project)} className="font-mono-label text-xs uppercase tracking-wider px-4 py-2 border rounded-sm transition-colors cursor-pointer hover:bg-white/[0.02]" style={{ borderColor: "var(--border)", color: "var(--ink)" }}>
+                      <div className="flex-shrink-0 flex gap-2 self-start sm:self-center">
+                        <button onClick={() => startEditing(project)} className="font-mono-label text-xs uppercase tracking-wider px-3 sm:px-4 py-1.5 sm:py-2 border rounded-sm transition-colors cursor-pointer hover:bg-white/[0.02]" style={{ borderColor: "var(--border)", color: "var(--ink)" }}>
                           Edit
                         </button>
-                        <button onClick={() => handleDelete(project.id)} className="font-mono-label text-xs uppercase tracking-wider px-4 py-2 border rounded-sm text-red-500 border-red-500/30 hover:bg-red-500/10 transition-colors cursor-pointer">
+                        <button onClick={() => handleDelete(project.id)} className="font-mono-label text-xs uppercase tracking-wider px-3 sm:px-4 py-1.5 sm:py-2 border rounded-sm text-red-500 border-red-500/30 hover:bg-red-500/10 transition-colors cursor-pointer">
                           Delete
                         </button>
                       </div>

@@ -172,25 +172,25 @@ export function CertsAdmin({ initialCerts }: { initialCerts: any[] }) {
                     renderForm(cert.id)
                   ) : (
                     <div 
-                      className="flex flex-col sm:flex-row justify-between items-start sm:items-center p-5 rounded-sm border"
+                      className="flex flex-col sm:flex-row justify-between items-start sm:items-center p-4 sm:p-5 rounded-sm border w-full min-w-0 gap-4"
                       style={{ borderColor: "var(--border)", backgroundColor: "var(--panel)" }}
                     >
-                      <div className="flex-1 min-w-0 pr-4">
+                      <div className="flex-1 min-w-0 w-full">
                         <div className="flex items-center gap-2 flex-wrap">
-                          <h3 className="font-display text-lg truncate" style={{ color: "var(--ink)" }}>{cert.title}</h3>
+                          <h3 className="font-display text-lg break-words" style={{ color: "var(--ink)" }}>{cert.title}</h3>
                           {tag && (
-                            <span className="font-mono-label text-[10px] border px-2 py-0.5 rounded-sm" style={{ borderColor: "var(--border)", color: "var(--muted)" }}>{tag}</span>
+                            <span className="font-mono-label text-[10px] border px-2 py-0.5 rounded-sm flex-shrink-0" style={{ borderColor: "var(--border)", color: "var(--muted)" }}>{tag}</span>
                           )}
                         </div>
-                        <p className="font-mono-label text-xs tracking-wider uppercase mt-1" style={{ color: "var(--muted)" }}>
+                        <p className="font-mono-label text-xs tracking-wider uppercase mt-1 break-words opacity-80" style={{ color: "var(--muted)" }}>
                           {displayIssuer} {credId && `// ID: ${credId}`} • {cert.date}
                         </p>
                       </div>
-                      <div className="mt-4 sm:mt-0 flex-shrink-0 flex gap-2 self-start">
-                        <button onClick={() => startEditing(cert)} className="font-mono-label text-xs uppercase tracking-wider px-4 py-2 border rounded-sm transition-colors cursor-pointer hover:bg-white/[0.02]" style={{ borderColor: "var(--border)", color: "var(--ink)" }}>
+                      <div className="flex-shrink-0 flex gap-2 self-start sm:self-center">
+                        <button onClick={() => startEditing(cert)} className="font-mono-label text-xs uppercase tracking-wider px-3 sm:px-4 py-1.5 sm:py-2 border rounded-sm transition-colors cursor-pointer hover:bg-white/[0.02]" style={{ borderColor: "var(--border)", color: "var(--ink)" }}>
                           Edit
                         </button>
-                        <button onClick={() => handleDelete(cert.id)} className="font-mono-label text-xs uppercase tracking-wider px-4 py-2 border rounded-sm text-red-500 border-red-500/30 hover:bg-red-500/10 transition-colors cursor-pointer">
+                        <button onClick={() => handleDelete(cert.id)} className="font-mono-label text-xs uppercase tracking-wider px-3 sm:px-4 py-1.5 sm:py-2 border rounded-sm text-red-500 border-red-500/30 hover:bg-red-500/10 transition-colors cursor-pointer">
                           Delete
                         </button>
                       </div>
