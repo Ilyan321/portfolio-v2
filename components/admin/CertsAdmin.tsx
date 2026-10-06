@@ -1,15 +1,19 @@
 "use client";
 
 import { useState } from "react";
+import { useRouter } from "next/navigation";
 import { DndContext, closestCenter, KeyboardSensor, PointerSensor, useSensor, useSensors, DragEndEvent } from "@dnd-kit/core";
 import { arrayMove, SortableContext, sortableKeyboardCoordinates, verticalListSortingStrategy } from "@dnd-kit/sortable";
 import { SortableItem } from "./SortableItem";
 import { updateCertPositions, deleteCert, createCert, updateCert, toggleCertVisibility } from "@/app/admin/actions";
 
 export function CertsAdmin({ initialCerts }: { initialCerts: any[] }) {
+  const router = useRouter();
   const [certs, setCerts] = useState(initialCerts);
   const [isAdding, setIsAdding] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [statusMsg, setStatusMsg] = useState<{ type: "success" | "error"; text: string } | null>(null);
   
   const [newTitle, setNewTitle] = useState("");
   const [newIssuer, setNewIssuer] = useState("");
@@ -42,6 +46,7 @@ export function CertsAdmin({ initialCerts }: { initialCerts: any[] }) {
   function startAdding() {
     setIsAdding(true);
     setEditingId(null);
+    setStatusMsg(null);
     setNewTitle("");
     setNewIssuer("");
     setNewCredentialId("");
@@ -53,6 +58,7 @@ export function CertsAdmin({ initialCerts }: { initialCerts: any[] }) {
 
   function startEditing(c: any) {
     setIsAdding(false);
+    setStatusMsg(null);
     setEditingId(c.id);
     setNewTitle(c.title);
     
@@ -82,11 +88,20 @@ export function CertsAdmin({ initialCerts }: { initialCerts: any[] }) {
   async function handleToggleHide(id: string, currentHidden: boolean) {
     const nextHidden = !currentHidden;
     setCerts(certs.map(c => c.id === id ? { ...c, hidden: nextHidden } : c));
-    await toggleCertVisibility(id, nextHidden);
+    const res = await toggleCertVisibility(id, nextHidden);
+    if (res && res.success) {
+      setStatusMsg({ type: "success", text: nextHidden ? "Certification hidden from public view." : "Certification is now visible on public portfolio." });
+      router.refresh();
+    } else {
+      setStatusMsg({ type: "error", text: `Visibility toggle failed: ${res?.error}` });
+    }
+    setTimeout(() => setStatusMsg(null), 3000);
   }
 
   async function handleSave(e: React.FormEvent, id?: string) {
     e.preventDefault();
+    setIsSubmitting(true);
+    setStatusMsg(null);
     
     const combinedIssuer = `${newIssuer} ||| ${newCredentialId} ||| ${newTag}`;
     
@@ -98,25 +113,57 @@ export function CertsAdmin({ initialCerts }: { initialCerts: any[] }) {
       hidden: newHidden
     };
 
-    if (id) {
-      const updatedCert = await updateCert(id, data);
-      if (updatedCert) {
-        setCerts(certs.map(c => c.id === id ? { ...updatedCert, hidden: newHidden } : c));
+    try {
+      if (id) {
+        const res = await updateCert(id, data);
+        if (res && res.success && res.cert) {
+          setCerts(certs.map(c => c.id === id ? { ...res.cert, hidden: newHidden } : c));
+          setStatusMsg({ type: "success", text: "Certification updated successfully!" });
+          setEditingId(null);
+          router.refresh();
+        } else if (res && !res.success) {
+          setStatusMsg({ type: "error", text: `Update failed: ${res.error}` });
+        } else {
+          setCerts(certs.map(c => c.id === id ? { ...c, ...data } : c));
+          setStatusMsg({ type: "success", text: "Certification updated successfully!" });
+          setEditingId(null);
+          router.refresh();
+        }
+      } else {
+        const res = await createCert({ ...data, position: certs.length });
+        if (res && res.success && res.cert) {
+          setCerts([...certs, { ...res.cert, hidden: newHidden }]);
+          setStatusMsg({ type: "success", text: "New certification added successfully!" });
+          setIsAdding(false);
+          router.refresh();
+        } else if (res && !res.success) {
+          setStatusMsg({ type: "error", text: `Creation failed: ${res.error}` });
+        } else {
+          setCerts([...certs, { id: `cert-${Date.now()}`, ...data, position: certs.length }]);
+          setStatusMsg({ type: "success", text: "New certification added successfully!" });
+          setIsAdding(false);
+          router.refresh();
+        }
       }
-      setEditingId(null);
-    } else {
-      const newCert = await createCert({ ...data, position: certs.length });
-      if (newCert) {
-        setCerts([...certs, { ...newCert, hidden: newHidden }]);
-      }
-      setIsAdding(false);
+    } catch (err: any) {
+      setStatusMsg({ type: "error", text: err.message || "Failed to save certification." });
+    } finally {
+      setIsSubmitting(false);
+      setTimeout(() => setStatusMsg(null), 4000);
     }
   }
 
   async function handleDelete(id: string) {
     if (confirm("Are you sure you want to delete this certification?")) {
-      await deleteCert(id);
-      setCerts(certs.filter(c => c.id !== id));
+      const res = await deleteCert(id);
+      if (res && !res.success) {
+        setStatusMsg({ type: "error", text: `Delete failed: ${res.error}` });
+      } else {
+        setCerts(certs.filter(c => c.id !== id));
+        setStatusMsg({ type: "success", text: "Certification removed." });
+        router.refresh();
+      }
+      setTimeout(() => setStatusMsg(null), 4000);
     }
   }
 
@@ -164,9 +211,14 @@ export function CertsAdmin({ initialCerts }: { initialCerts: any[] }) {
         </label>
       </div>
       
-      <div className="flex gap-4 pt-4 border-t" style={{ borderColor: "var(--border)" }}>
-        <button type="submit" className="font-mono-label text-xs uppercase tracking-widest px-6 py-3 rounded-sm transition-colors cursor-pointer" style={{ backgroundColor: "var(--accent)", color: "var(--bg)" }}>
-          {id ? "Update Cert" : "Save Cert"}
+      <div className="flex items-center gap-4 pt-4 border-t" style={{ borderColor: "var(--border)" }}>
+        <button 
+          type="submit" 
+          disabled={isSubmitting}
+          className="font-mono-label text-xs uppercase tracking-widest px-6 py-3 rounded-sm transition-colors cursor-pointer disabled:opacity-50" 
+          style={{ backgroundColor: "var(--accent)", color: "var(--bg)" }}
+        >
+          {isSubmitting ? "Saving..." : id ? "Update Cert" : "Save Cert"}
         </button>
         <button type="button" onClick={cancelEdit} className="font-mono-label text-xs uppercase tracking-widest px-6 py-3 border rounded-sm transition-colors cursor-pointer" style={{ borderColor: "var(--border)", color: "var(--muted)" }}>Cancel</button>
       </div>
@@ -175,6 +227,19 @@ export function CertsAdmin({ initialCerts }: { initialCerts: any[] }) {
 
   return (
     <div className="font-body">
+      {statusMsg && (
+        <div className="p-3 mb-4 rounded-sm border bg-panel">
+          <span
+            className={`font-mono-label text-xs uppercase tracking-wider ${
+              statusMsg.type === "success" ? "text-emerald-500 font-semibold" : "text-red-500"
+            }`}
+          >
+            {statusMsg.type === "success" ? "✓ " : "✕ "}
+            {statusMsg.text}
+          </span>
+        </div>
+      )}
+
       <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
         <SortableContext items={certs} strategy={verticalListSortingStrategy}>
           <div className="space-y-3 mb-6">

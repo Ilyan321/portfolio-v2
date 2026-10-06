@@ -11,74 +11,102 @@ function checkAuth() {
   }
 }
 
+// ----------------------------------------------------
+// Projects Server Actions
+// ----------------------------------------------------
+
 export async function updateProjectPositions(updates: { id: string; position: number }[]) {
-  checkAuth();
-  for (const update of updates) {
-    await supabaseAdmin.from("v2_projects").update({ position: update.position }).eq("id", update.id);
+  try {
+    checkAuth();
+    for (const update of updates) {
+      if (update.id && !update.id.startsWith("default-")) {
+        await supabaseAdmin.from("v2_projects").update({ position: update.position }).eq("id", update.id);
+      }
+    }
+    revalidatePath("/", "layout");
+    revalidatePath("/admin", "layout");
+    return { success: true };
+  } catch (err: any) {
+    return { success: false, error: err.message };
   }
-  revalidatePath("/");
-  revalidatePath("/admin");
 }
 
 export async function createProject(data: any) {
-  checkAuth();
-  const { data: newProj, error } = await supabaseAdmin.from("v2_projects").insert([data]).select().single();
-  if (error) throw new Error(error.message);
-  revalidatePath("/");
-  revalidatePath("/admin");
-  return newProj;
+  try {
+    checkAuth();
+    const { data: newProj, error } = await supabaseAdmin.from("v2_projects").insert([data]).select().single();
+    if (error) return { success: false, error: error.message };
+    revalidatePath("/", "layout");
+    revalidatePath("/admin", "layout");
+    return { success: true, project: newProj };
+  } catch (err: any) {
+    return { success: false, error: err.message };
+  }
 }
 
 export async function deleteProject(id: string) {
-  checkAuth();
-  await supabaseAdmin.from("v2_projects").delete().eq("id", id);
-  revalidatePath("/");
-  revalidatePath("/admin");
-}
-
-export async function updateCertPositions(updates: { id: string; position: number }[]) {
-  checkAuth();
-  for (const update of updates) {
-    await supabaseAdmin.from("v2_certifications").update({ position: update.position }).eq("id", update.id);
+  try {
+    checkAuth();
+    if (!id.startsWith("default-")) {
+      const { error } = await supabaseAdmin.from("v2_projects").delete().eq("id", id);
+      if (error) return { success: false, error: error.message };
+    }
+    revalidatePath("/", "layout");
+    revalidatePath("/admin", "layout");
+    return { success: true };
+  } catch (err: any) {
+    return { success: false, error: err.message };
   }
-  revalidatePath("/");
-  revalidatePath("/admin");
-}
-
-export async function createCert(data: any) {
-  checkAuth();
-  const { data: newCert, error } = await supabaseAdmin.from("v2_certifications").insert([data]).select().single();
-  if (error) throw new Error(error.message);
-  revalidatePath("/");
-  revalidatePath("/admin");
-  return newCert;
-}
-
-export async function deleteCert(id: string) {
-  checkAuth();
-  await supabaseAdmin.from("v2_certifications").delete().eq("id", id);
-  revalidatePath("/");
-  revalidatePath("/admin");
 }
 
 export async function updateProject(id: string, data: any) {
-  checkAuth();
-  const { data: updatedProj, error } = await supabaseAdmin.from("v2_projects").update(data).eq("id", id).select().single();
-  if (error) throw new Error(error.message);
-  revalidatePath("/");
-  revalidatePath("/admin");
-  return updatedProj;
-}
-
-export async function toggleProjectVisibility(id: string, isHidden: boolean) {
-  checkAuth();
   try {
-    const { data: updatedProj } = await supabaseAdmin
+    checkAuth();
+    if (id.startsWith("default-")) {
+      const { data: newProj, error } = await supabaseAdmin.from("v2_projects").insert([data]).select().single();
+      if (error) return { success: false, error: error.message };
+      revalidatePath("/", "layout");
+      revalidatePath("/admin", "layout");
+      return { success: true, project: newProj };
+    }
+
+    const { data: updatedProj, error } = await supabaseAdmin
       .from("v2_projects")
-      .update({ hidden: isHidden })
+      .update(data)
       .eq("id", id)
       .select()
       .single();
+
+    if (error) {
+      // Fallback: try inserting if not found
+      const { data: insertedProj, error: insErr } = await supabaseAdmin
+        .from("v2_projects")
+        .insert([{ ...data, id }])
+        .select()
+        .single();
+      if (insErr) return { success: false, error: error.message };
+      revalidatePath("/", "layout");
+      revalidatePath("/admin", "layout");
+      return { success: true, project: insertedProj };
+    }
+
+    revalidatePath("/", "layout");
+    revalidatePath("/admin", "layout");
+    return { success: true, project: updatedProj };
+  } catch (err: any) {
+    return { success: false, error: err.message };
+  }
+}
+
+export async function toggleProjectVisibility(id: string, isHidden: boolean) {
+  try {
+    checkAuth();
+    if (!id.startsWith("default-")) {
+      await supabaseAdmin
+        .from("v2_projects")
+        .update({ hidden: isHidden })
+        .eq("id", id);
+    }
     
     // Also sync to hidden_items fallback in v2_site_config
     const { data: cfgRow } = await supabaseAdmin.from("v2_site_config").select("data").eq("key", "hidden_items").single();
@@ -93,33 +121,110 @@ export async function toggleProjectVisibility(id: string, isHidden: boolean) {
       updated_at: new Date().toISOString()
     });
 
-    revalidatePath("/");
-    revalidatePath("/admin");
-    return { success: true, hidden: isHidden, project: updatedProj };
+    revalidatePath("/", "layout");
+    revalidatePath("/admin", "layout");
+    return { success: true, hidden: isHidden };
   } catch (err: any) {
     console.error("toggleProjectVisibility error:", err);
     return { success: false, error: err.message };
   }
 }
 
-export async function updateCert(id: string, data: any) {
-  checkAuth();
-  const { data: updatedCert, error } = await supabaseAdmin.from("v2_certifications").update(data).eq("id", id).select().single();
-  if (error) throw new Error(error.message);
-  revalidatePath("/");
-  revalidatePath("/admin");
-  return updatedCert;
+// ----------------------------------------------------
+// Certifications Server Actions
+// ----------------------------------------------------
+
+export async function updateCertPositions(updates: { id: string; position: number }[]) {
+  try {
+    checkAuth();
+    for (const update of updates) {
+      if (update.id && !update.id.startsWith("default-")) {
+        await supabaseAdmin.from("v2_certifications").update({ position: update.position }).eq("id", update.id);
+      }
+    }
+    revalidatePath("/", "layout");
+    revalidatePath("/admin", "layout");
+    return { success: true };
+  } catch (err: any) {
+    return { success: false, error: err.message };
+  }
 }
 
-export async function toggleCertVisibility(id: string, isHidden: boolean) {
-  checkAuth();
+export async function createCert(data: any) {
   try {
-    const { data: updatedCert } = await supabaseAdmin
+    checkAuth();
+    const { data: newCert, error } = await supabaseAdmin.from("v2_certifications").insert([data]).select().single();
+    if (error) return { success: false, error: error.message };
+    revalidatePath("/", "layout");
+    revalidatePath("/admin", "layout");
+    return { success: true, cert: newCert };
+  } catch (err: any) {
+    return { success: false, error: err.message };
+  }
+}
+
+export async function deleteCert(id: string) {
+  try {
+    checkAuth();
+    if (!id.startsWith("default-")) {
+      const { error } = await supabaseAdmin.from("v2_certifications").delete().eq("id", id);
+      if (error) return { success: false, error: error.message };
+    }
+    revalidatePath("/", "layout");
+    revalidatePath("/admin", "layout");
+    return { success: true };
+  } catch (err: any) {
+    return { success: false, error: err.message };
+  }
+}
+
+export async function updateCert(id: string, data: any) {
+  try {
+    checkAuth();
+    if (id.startsWith("default-")) {
+      const { data: newCert, error } = await supabaseAdmin.from("v2_certifications").insert([data]).select().single();
+      if (error) return { success: false, error: error.message };
+      revalidatePath("/", "layout");
+      revalidatePath("/admin", "layout");
+      return { success: true, cert: newCert };
+    }
+
+    const { data: updatedCert, error } = await supabaseAdmin
       .from("v2_certifications")
-      .update({ hidden: isHidden })
+      .update(data)
       .eq("id", id)
       .select()
       .single();
+
+    if (error) {
+      const { data: insertedCert, error: insErr } = await supabaseAdmin
+        .from("v2_certifications")
+        .insert([{ ...data, id }])
+        .select()
+        .single();
+      if (insErr) return { success: false, error: error.message };
+      revalidatePath("/", "layout");
+      revalidatePath("/admin", "layout");
+      return { success: true, cert: insertedCert };
+    }
+
+    revalidatePath("/", "layout");
+    revalidatePath("/admin", "layout");
+    return { success: true, cert: updatedCert };
+  } catch (err: any) {
+    return { success: false, error: err.message };
+  }
+}
+
+export async function toggleCertVisibility(id: string, isHidden: boolean) {
+  try {
+    checkAuth();
+    if (!id.startsWith("default-")) {
+      await supabaseAdmin
+        .from("v2_certifications")
+        .update({ hidden: isHidden })
+        .eq("id", id);
+    }
     
     // Also sync to hidden_items fallback in v2_site_config
     const { data: cfgRow } = await supabaseAdmin.from("v2_site_config").select("data").eq("key", "hidden_items").single();
@@ -134,9 +239,9 @@ export async function toggleCertVisibility(id: string, isHidden: boolean) {
       updated_at: new Date().toISOString()
     });
 
-    revalidatePath("/");
-    revalidatePath("/admin");
-    return { success: true, hidden: isHidden, cert: updatedCert };
+    revalidatePath("/", "layout");
+    revalidatePath("/admin", "layout");
+    return { success: true, hidden: isHidden };
   } catch (err: any) {
     console.error("toggleCertVisibility error:", err);
     return { success: false, error: err.message };
@@ -156,8 +261,8 @@ export async function saveSiteConfig(key: string, data: any) {
       updated_at: new Date().toISOString(),
     });
     if (error) return { success: false, error: error.message };
-    revalidatePath("/");
-    revalidatePath("/admin");
+    revalidatePath("/", "layout");
+    revalidatePath("/admin", "layout");
     return { success: true };
   } catch (err: any) {
     return { success: false, error: err.message };
@@ -169,37 +274,85 @@ export async function saveSiteConfig(key: string, data: any) {
 // ----------------------------------------------------
 
 export async function createExperience(data: any) {
-  checkAuth();
-  const { data: newExp, error } = await supabaseAdmin.from("v2_experience").insert([data]).select().single();
-  if (error) throw new Error(error.message);
-  revalidatePath("/");
-  revalidatePath("/admin");
-  return newExp;
+  try {
+    checkAuth();
+    const { data: newExp, error } = await supabaseAdmin.from("v2_experience").insert([data]).select().single();
+    if (error) return { success: false, error: error.message };
+    revalidatePath("/", "layout");
+    revalidatePath("/admin", "layout");
+    return { success: true, experience: newExp };
+  } catch (err: any) {
+    return { success: false, error: err.message };
+  }
 }
 
 export async function updateExperience(id: string, data: any) {
-  checkAuth();
-  const { data: updatedExp, error } = await supabaseAdmin.from("v2_experience").update(data).eq("id", id).select().single();
-  if (error) throw new Error(error.message);
-  revalidatePath("/");
-  revalidatePath("/admin");
-  return updatedExp;
+  try {
+    checkAuth();
+    if (id.startsWith("default-")) {
+      const { data: newExp, error } = await supabaseAdmin.from("v2_experience").insert([data]).select().single();
+      if (error) return { success: false, error: error.message };
+      revalidatePath("/", "layout");
+      revalidatePath("/admin", "layout");
+      return { success: true, experience: newExp };
+    }
+
+    const { data: updatedExp, error } = await supabaseAdmin
+      .from("v2_experience")
+      .update(data)
+      .eq("id", id)
+      .select()
+      .single();
+
+    if (error) {
+      const { data: insertedExp, error: insErr } = await supabaseAdmin
+        .from("v2_experience")
+        .insert([{ ...data, id }])
+        .select()
+        .single();
+      if (insErr) return { success: false, error: error.message };
+      revalidatePath("/", "layout");
+      revalidatePath("/admin", "layout");
+      return { success: true, experience: insertedExp };
+    }
+
+    revalidatePath("/", "layout");
+    revalidatePath("/admin", "layout");
+    return { success: true, experience: updatedExp };
+  } catch (err: any) {
+    return { success: false, error: err.message };
+  }
 }
 
 export async function deleteExperience(id: string) {
-  checkAuth();
-  await supabaseAdmin.from("v2_experience").delete().eq("id", id);
-  revalidatePath("/");
-  revalidatePath("/admin");
+  try {
+    checkAuth();
+    if (!id.startsWith("default-")) {
+      const { error } = await supabaseAdmin.from("v2_experience").delete().eq("id", id);
+      if (error) return { success: false, error: error.message };
+    }
+    revalidatePath("/", "layout");
+    revalidatePath("/admin", "layout");
+    return { success: true };
+  } catch (err: any) {
+    return { success: false, error: err.message };
+  }
 }
 
 export async function updateExperiencePositions(updates: { id: string; position: number }[]) {
-  checkAuth();
-  for (const update of updates) {
-    await supabaseAdmin.from("v2_experience").update({ position: update.position }).eq("id", update.id);
+  try {
+    checkAuth();
+    for (const update of updates) {
+      if (update.id && !update.id.startsWith("default-")) {
+        await supabaseAdmin.from("v2_experience").update({ position: update.position }).eq("id", update.id);
+      }
+    }
+    revalidatePath("/", "layout");
+    revalidatePath("/admin", "layout");
+    return { success: true };
+  } catch (err: any) {
+    return { success: false, error: err.message };
   }
-  revalidatePath("/");
-  revalidatePath("/admin");
 }
 
 // ----------------------------------------------------
@@ -207,37 +360,85 @@ export async function updateExperiencePositions(updates: { id: string; position:
 // ----------------------------------------------------
 
 export async function createEducation(data: any) {
-  checkAuth();
-  const { data: newEdu, error } = await supabaseAdmin.from("v2_education").insert([data]).select().single();
-  if (error) throw new Error(error.message);
-  revalidatePath("/");
-  revalidatePath("/admin");
-  return newEdu;
+  try {
+    checkAuth();
+    const { data: newEdu, error } = await supabaseAdmin.from("v2_education").insert([data]).select().single();
+    if (error) return { success: false, error: error.message };
+    revalidatePath("/", "layout");
+    revalidatePath("/admin", "layout");
+    return { success: true, education: newEdu };
+  } catch (err: any) {
+    return { success: false, error: err.message };
+  }
 }
 
 export async function updateEducation(id: string, data: any) {
-  checkAuth();
-  const { data: updatedEdu, error } = await supabaseAdmin.from("v2_education").update(data).eq("id", id).select().single();
-  if (error) throw new Error(error.message);
-  revalidatePath("/");
-  revalidatePath("/admin");
-  return updatedEdu;
+  try {
+    checkAuth();
+    if (id.startsWith("default-")) {
+      const { data: newEdu, error } = await supabaseAdmin.from("v2_education").insert([data]).select().single();
+      if (error) return { success: false, error: error.message };
+      revalidatePath("/", "layout");
+      revalidatePath("/admin", "layout");
+      return { success: true, education: newEdu };
+    }
+
+    const { data: updatedEdu, error } = await supabaseAdmin
+      .from("v2_education")
+      .update(data)
+      .eq("id", id)
+      .select()
+      .single();
+
+    if (error) {
+      const { data: insertedEdu, error: insErr } = await supabaseAdmin
+        .from("v2_education")
+        .insert([{ ...data, id }])
+        .select()
+        .single();
+      if (insErr) return { success: false, error: error.message };
+      revalidatePath("/", "layout");
+      revalidatePath("/admin", "layout");
+      return { success: true, education: insertedEdu };
+    }
+
+    revalidatePath("/", "layout");
+    revalidatePath("/admin", "layout");
+    return { success: true, education: updatedEdu };
+  } catch (err: any) {
+    return { success: false, error: err.message };
+  }
 }
 
 export async function deleteEducation(id: string) {
-  checkAuth();
-  await supabaseAdmin.from("v2_education").delete().eq("id", id);
-  revalidatePath("/");
-  revalidatePath("/admin");
+  try {
+    checkAuth();
+    if (!id.startsWith("default-")) {
+      const { error } = await supabaseAdmin.from("v2_education").delete().eq("id", id);
+      if (error) return { success: false, error: error.message };
+    }
+    revalidatePath("/", "layout");
+    revalidatePath("/admin", "layout");
+    return { success: true };
+  } catch (err: any) {
+    return { success: false, error: err.message };
+  }
 }
 
 export async function updateEducationPositions(updates: { id: string; position: number }[]) {
-  checkAuth();
-  for (const update of updates) {
-    await supabaseAdmin.from("v2_education").update({ position: update.position }).eq("id", update.id);
+  try {
+    checkAuth();
+    for (const update of updates) {
+      if (update.id && !update.id.startsWith("default-")) {
+        await supabaseAdmin.from("v2_education").update({ position: update.position }).eq("id", update.id);
+      }
+    }
+    revalidatePath("/", "layout");
+    revalidatePath("/admin", "layout");
+    return { success: true };
+  } catch (err: any) {
+    return { success: false, error: err.message };
   }
-  revalidatePath("/");
-  revalidatePath("/admin");
 }
 
 // ----------------------------------------------------
@@ -342,7 +543,8 @@ export async function deleteIndexedRepo(slug: string) {
       .delete()
       .eq("project_slug", slug);
     if (error) return { success: false, error: error.message };
-    revalidatePath("/admin");
+    revalidatePath("/", "layout");
+    revalidatePath("/admin", "layout");
     return { success: true };
   } catch (err: any) {
     return { success: false, error: err.message };
@@ -490,7 +692,8 @@ export async function ingestGitHubRepo(repoFullName: string, customSlug?: string
       return { success: false, error: `Supabase vector insert error: ${insertErr.message}` };
     }
 
-    revalidatePath("/admin");
+    revalidatePath("/", "layout");
+    revalidatePath("/admin", "layout");
     return { success: true, slug, chunksCount: rows.length };
   } catch (err: any) {
     return { success: false, error: err.message || "Unknown error during ingestion." };

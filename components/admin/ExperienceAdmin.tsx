@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { useRouter } from "next/navigation";
 import { DndContext, closestCenter, KeyboardSensor, PointerSensor, useSensor, useSensors, DragEndEvent } from "@dnd-kit/core";
 import { arrayMove, SortableContext, sortableKeyboardCoordinates, verticalListSortingStrategy } from "@dnd-kit/sortable";
 import { SortableItem } from "./SortableItem";
@@ -19,9 +20,12 @@ export type ExperienceItem = {
 };
 
 export function ExperienceAdmin({ initialExperience }: { initialExperience: ExperienceItem[] }) {
+  const router = useRouter();
   const [experienceList, setExperienceList] = useState<ExperienceItem[]>(initialExperience);
   const [isAdding, setIsAdding] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [statusMsg, setStatusMsg] = useState<{ type: "success" | "error"; text: string } | null>(null);
 
   const [role, setRole] = useState("");
   const [company, setCompany] = useState("");
@@ -54,6 +58,7 @@ export function ExperienceAdmin({ initialExperience }: { initialExperience: Expe
   function startAdding() {
     setIsAdding(true);
     setEditingId(null);
+    setStatusMsg(null);
     setRole("");
     setCompany("");
     setPeriod("");
@@ -65,6 +70,7 @@ export function ExperienceAdmin({ initialExperience }: { initialExperience: Expe
 
   function startEditing(item: ExperienceItem) {
     setIsAdding(false);
+    setStatusMsg(null);
     setEditingId(item.id);
     setRole(item.role);
     setCompany(item.company);
@@ -82,6 +88,8 @@ export function ExperienceAdmin({ initialExperience }: { initialExperience: Expe
 
   async function handleSave(e: React.FormEvent, id?: string) {
     e.preventDefault();
+    setIsSubmitting(true);
+    setStatusMsg(null);
 
     const parsedSkills = skillsStr
       .split(",")
@@ -98,25 +106,58 @@ export function ExperienceAdmin({ initialExperience }: { initialExperience: Expe
       skills: parsedSkills,
     };
 
-    if (id) {
-      const updated = await updateExperience(id, payload);
-      if (updated) {
-        setExperienceList(experienceList.map((item) => (item.id === id ? updated : item)));
+    try {
+      if (id) {
+        const res = await updateExperience(id, payload);
+        if (res && res.success && res.experience) {
+          setExperienceList(experienceList.map((item) => (item.id === id ? res.experience : item)));
+          setStatusMsg({ type: "success", text: "Role updated successfully!" });
+          setEditingId(null);
+          router.refresh();
+        } else if (res && !res.success) {
+          setStatusMsg({ type: "error", text: `Update failed: ${res.error}` });
+        } else {
+          // fallback if direct object returned
+          setExperienceList(experienceList.map((item) => (item.id === id ? { ...item, ...payload } : item)));
+          setStatusMsg({ type: "success", text: "Role updated successfully!" });
+          setEditingId(null);
+          router.refresh();
+        }
+      } else {
+        const res = await createExperience({ ...payload, position: experienceList.length });
+        if (res && res.success && res.experience) {
+          setExperienceList([...experienceList, res.experience]);
+          setStatusMsg({ type: "success", text: "New role created successfully!" });
+          setIsAdding(false);
+          router.refresh();
+        } else if (res && !res.success) {
+          setStatusMsg({ type: "error", text: `Creation failed: ${res.error}` });
+        } else {
+          setExperienceList([...experienceList, { id: `exp-${Date.now()}`, ...payload, position: experienceList.length }]);
+          setStatusMsg({ type: "success", text: "New role created successfully!" });
+          setIsAdding(false);
+          router.refresh();
+        }
       }
-      setEditingId(null);
-    } else {
-      const created = await createExperience({ ...payload, position: experienceList.length });
-      if (created) {
-        setExperienceList([...experienceList, created]);
-      }
-      setIsAdding(false);
+    } catch (err: any) {
+      setStatusMsg({ type: "error", text: err.message || "Failed to save experience." });
+    } finally {
+      setIsSubmitting(false);
+      setTimeout(() => setStatusMsg(null), 4000);
     }
   }
 
   async function handleDelete(id: string) {
     if (confirm("Are you sure you want to delete this experience entry?")) {
-      await deleteExperience(id);
-      setExperienceList(experienceList.filter((item) => item.id !== id));
+      const res = await deleteExperience(id);
+      if (res && !res.success) {
+        setStatusMsg({ type: "error", text: `Delete failed: ${res.error}` });
+      } else {
+        setExperienceList(experienceList.filter((item) => item.id !== id));
+        setStatusMsg({ type: "success", text: "Experience entry removed." });
+        router.refresh();
+      }
+      setTimeout(() => setStatusMsg(null), 4000);
     }
   }
 
@@ -231,13 +272,14 @@ export function ExperienceAdmin({ initialExperience }: { initialExperience: Expe
         />
       </div>
 
-      <div className="flex gap-4 pt-4 border-t" style={{ borderColor: "var(--border)" }}>
+      <div className="flex items-center gap-4 pt-4 border-t" style={{ borderColor: "var(--border)" }}>
         <button
           type="submit"
-          className="font-mono-label text-xs uppercase tracking-widest px-6 py-3 rounded-sm transition-colors cursor-pointer"
+          disabled={isSubmitting}
+          className="font-mono-label text-xs uppercase tracking-widest px-6 py-3 rounded-sm transition-colors cursor-pointer disabled:opacity-50"
           style={{ backgroundColor: "var(--accent)", color: "var(--bg)" }}
         >
-          {id ? "Update Role" : "Save Role"}
+          {isSubmitting ? "Saving..." : id ? "Update Role" : "Save Role"}
         </button>
         <button
           type="button"
@@ -253,6 +295,19 @@ export function ExperienceAdmin({ initialExperience }: { initialExperience: Expe
 
   return (
     <div className="font-body space-y-6">
+      {statusMsg && (
+        <div className="p-3 rounded-sm border bg-panel">
+          <span
+            className={`font-mono-label text-xs uppercase tracking-wider ${
+              statusMsg.type === "success" ? "text-emerald-500 font-semibold" : "text-red-500"
+            }`}
+          >
+            {statusMsg.type === "success" ? "✓ " : "✕ "}
+            {statusMsg.text}
+          </span>
+        </div>
+      )}
+
       <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
         <SortableContext items={experienceList} strategy={verticalListSortingStrategy}>
           <div className="space-y-3">

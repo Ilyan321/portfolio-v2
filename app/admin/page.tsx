@@ -3,6 +3,7 @@ import { site, stats, techStack, researchSpotlight, experience, education } from
 import { AdminDashboardClient } from "@/components/admin/AdminDashboardClient";
 
 export const dynamic = "force-dynamic";
+export const revalidate = 0;
 
 export default async function AdminPage() {
   // Defaults from lib/data.ts

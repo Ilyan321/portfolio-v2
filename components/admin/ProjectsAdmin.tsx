@@ -1,15 +1,19 @@
 "use client";
 
 import { useState } from "react";
+import { useRouter } from "next/navigation";
 import { DndContext, closestCenter, KeyboardSensor, PointerSensor, useSensor, useSensors, DragEndEvent } from "@dnd-kit/core";
 import { arrayMove, SortableContext, sortableKeyboardCoordinates, verticalListSortingStrategy } from "@dnd-kit/sortable";
 import { SortableItem } from "./SortableItem";
 import { updateProjectPositions, deleteProject, createProject, updateProject, toggleProjectVisibility } from "@/app/admin/actions";
 
 export function ProjectsAdmin({ initialProjects }: { initialProjects: any[] }) {
+  const router = useRouter();
   const [projects, setProjects] = useState(initialProjects);
   const [isAdding, setIsAdding] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [statusMsg, setStatusMsg] = useState<{ type: "success" | "error"; text: string } | null>(null);
   
   const [newTitle, setNewTitle] = useState("");
   const [newTagline, setNewTagline] = useState("");
@@ -42,6 +46,7 @@ export function ProjectsAdmin({ initialProjects }: { initialProjects: any[] }) {
   function startAdding() {
     setIsAdding(true);
     setEditingId(null);
+    setStatusMsg(null);
     setNewTitle("");
     setNewTagline("");
     setNewDesc("");
@@ -53,6 +58,7 @@ export function ProjectsAdmin({ initialProjects }: { initialProjects: any[] }) {
 
   function startEditing(p: any) {
     setIsAdding(false);
+    setStatusMsg(null);
     setEditingId(p.id);
     
     let titleStr = p.title || "";
@@ -80,11 +86,21 @@ export function ProjectsAdmin({ initialProjects }: { initialProjects: any[] }) {
   async function handleToggleHide(id: string, currentHidden: boolean) {
     const nextHidden = !currentHidden;
     setProjects(projects.map(p => p.id === id ? { ...p, hidden: nextHidden } : p));
-    await toggleProjectVisibility(id, nextHidden);
+    const res = await toggleProjectVisibility(id, nextHidden);
+    if (res && res.success) {
+      setStatusMsg({ type: "success", text: nextHidden ? "Project hidden from public view." : "Project is now visible on public portfolio." });
+      router.refresh();
+    } else {
+      setStatusMsg({ type: "error", text: `Visibility toggle failed: ${res?.error}` });
+    }
+    setTimeout(() => setStatusMsg(null), 3000);
   }
 
   async function handleSave(e: React.FormEvent, id?: string) {
     e.preventDefault();
+    setIsSubmitting(true);
+    setStatusMsg(null);
+
     const tagArray = newTags.split(",").map(t => t.trim()).filter(Boolean);
     const combinedTitle = newTagline ? `${newTitle} ||| ${newTagline}` : newTitle;
     
@@ -97,25 +113,57 @@ export function ProjectsAdmin({ initialProjects }: { initialProjects: any[] }) {
       hidden: newHidden
     };
 
-    if (id) {
-      const updatedProj = await updateProject(id, data);
-      if (updatedProj) {
-        setProjects(projects.map(p => p.id === id ? { ...updatedProj, hidden: newHidden } : p));
+    try {
+      if (id) {
+        const res = await updateProject(id, data);
+        if (res && res.success && res.project) {
+          setProjects(projects.map(p => p.id === id ? { ...res.project, hidden: newHidden } : p));
+          setStatusMsg({ type: "success", text: "Project updated successfully!" });
+          setEditingId(null);
+          router.refresh();
+        } else if (res && !res.success) {
+          setStatusMsg({ type: "error", text: `Update failed: ${res.error}` });
+        } else {
+          setProjects(projects.map(p => p.id === id ? { ...p, ...data } : p));
+          setStatusMsg({ type: "success", text: "Project updated successfully!" });
+          setEditingId(null);
+          router.refresh();
+        }
+      } else {
+        const res = await createProject({ ...data, position: projects.length });
+        if (res && res.success && res.project) {
+          setProjects([...projects, { ...res.project, hidden: newHidden }]);
+          setStatusMsg({ type: "success", text: "New project added successfully!" });
+          setIsAdding(false);
+          router.refresh();
+        } else if (res && !res.success) {
+          setStatusMsg({ type: "error", text: `Creation failed: ${res.error}` });
+        } else {
+          setProjects([...projects, { id: `proj-${Date.now()}`, ...data, position: projects.length }]);
+          setStatusMsg({ type: "success", text: "New project added successfully!" });
+          setIsAdding(false);
+          router.refresh();
+        }
       }
-      setEditingId(null);
-    } else {
-      const newProj = await createProject({ ...data, position: projects.length });
-      if (newProj) {
-        setProjects([...projects, { ...newProj, hidden: newHidden }]);
-      }
-      setIsAdding(false);
+    } catch (err: any) {
+      setStatusMsg({ type: "error", text: err.message || "Failed to save project." });
+    } finally {
+      setIsSubmitting(false);
+      setTimeout(() => setStatusMsg(null), 4000);
     }
   }
 
   async function handleDelete(id: string) {
     if (confirm("Are you sure you want to delete this project?")) {
-      await deleteProject(id);
-      setProjects(projects.filter(p => p.id !== id));
+      const res = await deleteProject(id);
+      if (res && !res.success) {
+        setStatusMsg({ type: "error", text: `Delete failed: ${res.error}` });
+      } else {
+        setProjects(projects.filter(p => p.id !== id));
+        setStatusMsg({ type: "success", text: "Project removed." });
+        router.refresh();
+      }
+      setTimeout(() => setStatusMsg(null), 4000);
     }
   }
 
@@ -163,9 +211,14 @@ export function ProjectsAdmin({ initialProjects }: { initialProjects: any[] }) {
         </label>
       </div>
       
-      <div className="flex gap-4 pt-4 border-t" style={{ borderColor: "var(--border)" }}>
-        <button type="submit" className="font-mono-label text-xs uppercase tracking-widest px-6 py-3 rounded-sm transition-colors cursor-pointer" style={{ backgroundColor: "var(--accent)", color: "var(--bg)" }}>
-          {id ? "Update Project" : "Save Project"}
+      <div className="flex items-center gap-4 pt-4 border-t" style={{ borderColor: "var(--border)" }}>
+        <button 
+          type="submit" 
+          disabled={isSubmitting}
+          className="font-mono-label text-xs uppercase tracking-widest px-6 py-3 rounded-sm transition-colors cursor-pointer disabled:opacity-50" 
+          style={{ backgroundColor: "var(--accent)", color: "var(--bg)" }}
+        >
+          {isSubmitting ? "Saving..." : id ? "Update Project" : "Save Project"}
         </button>
         <button type="button" onClick={cancelEdit} className="font-mono-label text-xs uppercase tracking-widest px-6 py-3 border rounded-sm transition-colors cursor-pointer" style={{ borderColor: "var(--border)", color: "var(--muted)" }}>Cancel</button>
       </div>
@@ -174,6 +227,19 @@ export function ProjectsAdmin({ initialProjects }: { initialProjects: any[] }) {
 
   return (
     <div className="font-body">
+      {statusMsg && (
+        <div className="p-3 mb-4 rounded-sm border bg-panel">
+          <span
+            className={`font-mono-label text-xs uppercase tracking-wider ${
+              statusMsg.type === "success" ? "text-emerald-500 font-semibold" : "text-red-500"
+            }`}
+          >
+            {statusMsg.type === "success" ? "✓ " : "✕ "}
+            {statusMsg.text}
+          </span>
+        </div>
+      )}
+
       <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
         <SortableContext items={projects} strategy={verticalListSortingStrategy}>
           <div className="space-y-3 mb-6">

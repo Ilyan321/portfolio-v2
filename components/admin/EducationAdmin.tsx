@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { useRouter } from "next/navigation";
 import { DndContext, closestCenter, KeyboardSensor, PointerSensor, useSensor, useSensors, DragEndEvent } from "@dnd-kit/core";
 import { arrayMove, SortableContext, sortableKeyboardCoordinates, verticalListSortingStrategy } from "@dnd-kit/sortable";
 import { SortableItem } from "./SortableItem";
@@ -17,9 +18,12 @@ export type EducationItem = {
 };
 
 export function EducationAdmin({ initialEducation }: { initialEducation: EducationItem[] }) {
+  const router = useRouter();
   const [eduList, setEduList] = useState<EducationItem[]>(initialEducation);
   const [isAdding, setIsAdding] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [statusMsg, setStatusMsg] = useState<{ type: "success" | "error"; text: string } | null>(null);
 
   const [institution, setInstitution] = useState("");
   const [degree, setDegree] = useState("");
@@ -50,6 +54,7 @@ export function EducationAdmin({ initialEducation }: { initialEducation: Educati
   function startAdding() {
     setIsAdding(true);
     setEditingId(null);
+    setStatusMsg(null);
     setInstitution("");
     setDegree("");
     setPeriod("");
@@ -59,6 +64,7 @@ export function EducationAdmin({ initialEducation }: { initialEducation: Educati
 
   function startEditing(item: EducationItem) {
     setIsAdding(false);
+    setStatusMsg(null);
     setEditingId(item.id);
     setInstitution(item.institution);
     setDegree(item.degree);
@@ -74,6 +80,8 @@ export function EducationAdmin({ initialEducation }: { initialEducation: Educati
 
   async function handleSave(e: React.FormEvent, id?: string) {
     e.preventDefault();
+    setIsSubmitting(true);
+    setStatusMsg(null);
 
     const payload = {
       institution,
@@ -83,25 +91,57 @@ export function EducationAdmin({ initialEducation }: { initialEducation: Educati
       details,
     };
 
-    if (id) {
-      const updated = await updateEducation(id, payload);
-      if (updated) {
-        setEduList(eduList.map((item) => (item.id === id ? updated : item)));
+    try {
+      if (id) {
+        const res = await updateEducation(id, payload);
+        if (res && res.success && res.education) {
+          setEduList(eduList.map((item) => (item.id === id ? res.education : item)));
+          setStatusMsg({ type: "success", text: "Education credential updated successfully!" });
+          setEditingId(null);
+          router.refresh();
+        } else if (res && !res.success) {
+          setStatusMsg({ type: "error", text: `Update failed: ${res.error}` });
+        } else {
+          setEduList(eduList.map((item) => (item.id === id ? { ...item, ...payload } : item)));
+          setStatusMsg({ type: "success", text: "Education credential updated successfully!" });
+          setEditingId(null);
+          router.refresh();
+        }
+      } else {
+        const res = await createEducation({ ...payload, position: eduList.length });
+        if (res && res.success && res.education) {
+          setEduList([...eduList, res.education]);
+          setStatusMsg({ type: "success", text: "New education credential created!" });
+          setIsAdding(false);
+          router.refresh();
+        } else if (res && !res.success) {
+          setStatusMsg({ type: "error", text: `Creation failed: ${res.error}` });
+        } else {
+          setEduList([...eduList, { id: `edu-${Date.now()}`, ...payload, position: eduList.length }]);
+          setStatusMsg({ type: "success", text: "New education credential created!" });
+          setIsAdding(false);
+          router.refresh();
+        }
       }
-      setEditingId(null);
-    } else {
-      const created = await createEducation({ ...payload, position: eduList.length });
-      if (created) {
-        setEduList([...eduList, created]);
-      }
-      setIsAdding(false);
+    } catch (err: any) {
+      setStatusMsg({ type: "error", text: err.message || "Failed to save education." });
+    } finally {
+      setIsSubmitting(false);
+      setTimeout(() => setStatusMsg(null), 4000);
     }
   }
 
   async function handleDelete(id: string) {
     if (confirm("Are you sure you want to delete this education entry?")) {
-      await deleteEducation(id);
-      setEduList(eduList.filter((item) => item.id !== id));
+      const res = await deleteEducation(id);
+      if (res && !res.success) {
+        setStatusMsg({ type: "error", text: `Delete failed: ${res.error}` });
+      } else {
+        setEduList(eduList.filter((item) => item.id !== id));
+        setStatusMsg({ type: "success", text: "Education entry deleted." });
+        router.refresh();
+      }
+      setTimeout(() => setStatusMsg(null), 4000);
     }
   }
 
@@ -187,13 +227,14 @@ export function EducationAdmin({ initialEducation }: { initialEducation: Educati
         />
       </div>
 
-      <div className="flex gap-4 pt-4 border-t" style={{ borderColor: "var(--border)" }}>
+      <div className="flex items-center gap-4 pt-4 border-t" style={{ borderColor: "var(--border)" }}>
         <button
           type="submit"
-          className="font-mono-label text-xs uppercase tracking-widest px-6 py-3 rounded-sm transition-colors cursor-pointer"
+          disabled={isSubmitting}
+          className="font-mono-label text-xs uppercase tracking-widest px-6 py-3 rounded-sm transition-colors cursor-pointer disabled:opacity-50"
           style={{ backgroundColor: "var(--accent)", color: "var(--bg)" }}
         >
-          {id ? "Update Education" : "Save Education"}
+          {isSubmitting ? "Saving..." : id ? "Update Education" : "Save Education"}
         </button>
         <button
           type="button"
@@ -209,6 +250,19 @@ export function EducationAdmin({ initialEducation }: { initialEducation: Educati
 
   return (
     <div className="font-body space-y-6">
+      {statusMsg && (
+        <div className="p-3 rounded-sm border bg-panel">
+          <span
+            className={`font-mono-label text-xs uppercase tracking-wider ${
+              statusMsg.type === "success" ? "text-emerald-500 font-semibold" : "text-red-500"
+            }`}
+          >
+            {statusMsg.type === "success" ? "✓ " : "✕ "}
+            {statusMsg.text}
+          </span>
+        </div>
+      )}
+
       <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
         <SortableContext items={eduList} strategy={verticalListSortingStrategy}>
           <div className="space-y-3">

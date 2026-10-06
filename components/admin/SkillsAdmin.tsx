@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { useRouter } from "next/navigation";
 import { saveSiteConfig } from "@/app/admin/actions";
 
 export type StatItem = {
@@ -20,6 +21,7 @@ export function SkillsAdmin({
   initialStats: StatItem[];
   initialTechStack: TechGroup[];
 }) {
+  const router = useRouter();
   const [stats, setStats] = useState<StatItem[]>(initialStats);
   const [techStack, setTechStack] = useState<TechGroup[]>(initialTechStack);
   const [isSaving, setIsSaving] = useState(false);
@@ -73,6 +75,7 @@ export function SkillsAdmin({
           type: "success",
           text: "Skills & Benchmark Metrics updated live on homepage!",
         });
+        router.refresh();
       }
     } catch (err: any) {
       setStatusMsg({ type: "error", text: err.message || "Failed to save skills." });

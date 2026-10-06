@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { useRouter } from "next/navigation";
 import { saveSiteConfig } from "@/app/admin/actions";
 
 export type DiagnosticItem = {
@@ -25,6 +26,7 @@ export type ResearchSpotlightData = {
 };
 
 export function SpotlightAdmin({ initialSpotlight }: { initialSpotlight: ResearchSpotlightData }) {
+  const router = useRouter();
   const [spotlight, setSpotlight] = useState<ResearchSpotlightData>(initialSpotlight);
   const [tagsStr, setTagsStr] = useState<string>((initialSpotlight.stackTags || []).join(", "));
   const [isSaving, setIsSaving] = useState(false);
@@ -51,6 +53,7 @@ export function SpotlightAdmin({ initialSpotlight }: { initialSpotlight: Researc
         setStatusMsg({ type: "error", text: `Save failed: ${res.error}` });
       } else {
         setStatusMsg({ type: "success", text: "Research Spotlight updated live on homepage!" });
+        router.refresh();
       }
     } catch (err: any) {
       setStatusMsg({ type: "error", text: err.message || "Failed to save spotlight." });

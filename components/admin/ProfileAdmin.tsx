@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { useRouter } from "next/navigation";
 import { saveSiteConfig } from "@/app/admin/actions";
 
 export type ProfileData = {
@@ -30,6 +31,7 @@ export function ProfileAdmin({
   initialProfile: ProfileData;
   initialContacts: ContactsData;
 }) {
+  const router = useRouter();
   const [profile, setProfile] = useState<ProfileData>(initialProfile);
   const [contacts, setContacts] = useState<ContactsData>(initialContacts);
   const [isSaving, setIsSaving] = useState(false);
@@ -56,6 +58,7 @@ export function ProfileAdmin({
           type: "success",
           text: "Profile & Contacts updated live on homepage!",
         });
+        router.refresh();
       }
     } catch (err: any) {
       setStatusMsg({ type: "error", text: err.message || "Failed to save profile." });
