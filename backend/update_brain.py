@@ -88,14 +88,33 @@ def get_github_readme(repo_url: str) -> str:
     except Exception:
         return None
 
-def chunk_text(text: str, chunk_size: int = 1000, overlap: int = 200) -> list[str]:
+def chunk_text(text: str, max_chunk_size: int = 800) -> list[str]:
+    cleaned = text.replace("\r\n", "\n")
+    paragraphs = [p.strip() for p in cleaned.split("\n\n") if p.strip()]
     chunks = []
-    start = 0
-    while start < len(text):
-        end = start + chunk_size
-        chunks.append(text[start:end])
-        start += (chunk_size - overlap)
-    return chunks
+    current = ""
+    for p in paragraphs:
+        if len(current) + len(p) + 2 <= max_chunk_size:
+            current = f"{current}\n\n{p}" if current else p
+        else:
+            if current:
+                chunks.append(current)
+            if len(p) > max_chunk_size:
+                lines = [l for l in p.split("\n") if l.strip()]
+                sub = ""
+                for line in lines:
+                    if len(sub) + len(line) + 1 <= max_chunk_size:
+                        sub = f"{sub}\n{line}" if sub else line
+                    else:
+                        if sub:
+                            chunks.append(sub)
+                        sub = line
+                current = sub
+            else:
+                current = p
+    if current:
+        chunks.append(current)
+    return chunks if chunks else [cleaned[:max_chunk_size]]
 
 def supabase_rpc_delete(slug: str):
     url = f"{SUPABASE_URL}/rest/v1/portfolio_documents?project_slug=eq.{urllib.parse.quote(slug)}"
@@ -171,10 +190,20 @@ def get_all_projects():
         return []
 
 def main():
-    if "--all" in sys.argv:
+    if "--repo" in sys.argv:
+        idx = sys.argv.index("--repo")
+        repo_url = sys.argv[idx + 1]
+        slug = repo_url.split("/")[-1]
+        if "--slug" in sys.argv:
+            s_idx = sys.argv.index("--slug")
+            slug = sys.argv[s_idx + 1]
+        process_repo({"title": slug, "github": repo_url})
+    elif "--all" in sys.argv:
         projects = get_all_projects()
         for p in projects:
             process_repo(p)
+    else:
+        print("Usage: python3 backend/update_brain.py [--all] | [--repo <github_url> --slug <name>]")
 
 if __name__ == "__main__":
     main()

@@ -188,26 +188,78 @@ export async function deleteIndexedRepo(slug: string) {
   }
 }
 
-function chunkText(text: string, chunkSize = 1000, overlap = 200): string[] {
-  const chunks: string[] = [];
-  let start = 0;
-  while (start < text.length) {
-    const end = start + chunkSize;
-    chunks.push(text.slice(start, end));
-    start += (chunkSize - overlap);
+function cleanUtf16(str: string): string {
+  if (typeof (str as any).toWellFormed === "function") {
+    return (str as any).toWellFormed();
   }
-  return chunks;
+  return str.replace(/[\uD800-\uDBFF](?![\uDC00-\uDFFF])|(?<![\uD800-\uDBFF])[\uDC00-\uDFFF]/g, "");
+}
+
+function chunkText(text: string, maxChunkSize = 800): string[] {
+  const cleaned = cleanUtf16(text.replace(/\r\n/g, "\n"));
+  const paragraphs = cleaned.split(/\n\n+/);
+  const chunks: string[] = [];
+  let currentChunk = "";
+
+  for (const para of paragraphs) {
+    const trimmed = para.trim();
+    if (!trimmed) continue;
+
+    if (currentChunk.length + trimmed.length + 2 <= maxChunkSize) {
+      currentChunk = currentChunk ? `${currentChunk}\n\n${trimmed}` : trimmed;
+    } else {
+      if (currentChunk) {
+        chunks.push(cleanUtf16(currentChunk));
+      }
+      if (trimmed.length > maxChunkSize) {
+        const lines = trimmed.split(/\n+/);
+        let subChunk = "";
+        for (const line of lines) {
+          if (subChunk.length + line.length + 1 <= maxChunkSize) {
+            subChunk = subChunk ? `${subChunk}\n${line}` : line;
+          } else {
+            if (subChunk) chunks.push(cleanUtf16(subChunk));
+            if (line.length > maxChunkSize) {
+              const words = line.split(" ");
+              let wordChunk = "";
+              for (const w of words) {
+                if (wordChunk.length + w.length + 1 <= maxChunkSize) {
+                  wordChunk = wordChunk ? `${wordChunk} ${w}` : w;
+                } else {
+                  if (wordChunk) chunks.push(cleanUtf16(wordChunk));
+                  wordChunk = w;
+                }
+              }
+              subChunk = wordChunk;
+            } else {
+              subChunk = line;
+            }
+          }
+        }
+        currentChunk = subChunk;
+      } else {
+        currentChunk = trimmed;
+      }
+    }
+  }
+
+  if (currentChunk) {
+    chunks.push(cleanUtf16(currentChunk));
+  }
+
+  return chunks.length > 0 ? chunks : [cleanUtf16(cleaned.slice(0, maxChunkSize))];
 }
 
 async function getEmbeddingsBatch(texts: string[], hfToken: string): Promise<number[][]> {
   const HF_API_URL = "https://router.huggingface.co/hf-inference/models/BAAI/bge-small-en-v1.5";
+  const sanitizedTexts = texts.map((t) => cleanUtf16(t));
   const res = await fetch(HF_API_URL, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
       Authorization: `Bearer ${hfToken}`,
     },
-    body: JSON.stringify({ inputs: texts }),
+    body: JSON.stringify({ inputs: sanitizedTexts }),
   });
   if (!res.ok) {
     const err = await res.text();
