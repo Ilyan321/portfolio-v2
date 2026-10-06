@@ -65,42 +65,67 @@ export default function About({
               </div>
 
               {/* Academic Standing Cards */}
-              <div className="mt-10 space-y-4">
-                {activeEdu.map((edu: any, idx: number) => (
-                  <div
-                    key={edu.id || idx}
-                    className="rounded-sm border p-5 transition-colors w-full min-w-0"
-                    style={{
-                      borderColor: "var(--border)",
-                      backgroundColor: "var(--panel)",
-                    }}
-                  >
-                    <div className="flex items-center justify-between font-mono-label text-[11px] uppercase tracking-wider text-muted">
-                      <span style={{ color: "var(--accent)" }}>{idx === 0 ? "University Education" : "Prior Education"}</span>
-                      {edu.details && <span>{edu.details}</span>}
-                    </div>
+              <div className="mt-10 space-y-3">
+                {activeEdu.map((edu: any, idx: number) => {
+                  if (idx === 0) {
+                    return (
+                      <div
+                        key={edu.id || idx}
+                        className="rounded-sm border p-5 transition-colors w-full min-w-0"
+                        style={{
+                          borderColor: "var(--border)",
+                          backgroundColor: "var(--panel)",
+                        }}
+                      >
+                        <div className="flex items-center justify-between font-mono-label text-[11px] uppercase tracking-wider text-muted">
+                          <span style={{ color: "var(--accent)" }}>University Education</span>
+                          {edu.details && <span>{edu.details}</span>}
+                        </div>
+                        <div
+                          className="mt-2 font-display text-base font-semibold break-words"
+                          style={{ color: "var(--ink)" }}
+                        >
+                          {edu.degree}
+                        </div>
+                        <div className="mt-0.5 text-xs text-muted break-words">
+                          {edu.institution}
+                        </div>
+                        <div
+                          className="mt-2 flex flex-wrap items-center gap-x-4 gap-y-1 font-mono-label text-[11px] text-muted"
+                        >
+                          <span>{edu.period}</span>
+                          {edu.location && (
+                            <>
+                              <span>•</span>
+                              <span>{edu.location}</span>
+                            </>
+                          )}
+                        </div>
+                      </div>
+                    );
+                  }
+                  return (
                     <div
-                      className="mt-2 font-display text-base font-semibold break-words"
-                      style={{ color: "var(--ink)" }}
+                      key={edu.id || idx}
+                      className="rounded-sm border p-4 font-mono-label text-xs transition-colors w-full min-w-0"
+                      style={{
+                        borderColor: "var(--border)",
+                        backgroundColor: "var(--panel)",
+                      }}
                     >
-                      {edu.degree}
+                      <div className="flex items-center justify-between text-[10px] uppercase tracking-wider text-muted">
+                        <span>Prior Education</span>
+                        {edu.details && <span style={{ color: "var(--accent)" }}>{edu.details}</span>}
+                      </div>
+                      <div className="mt-1 text-ink font-body text-sm font-medium break-words">
+                        {edu.degree}
+                      </div>
+                      <div className="mt-0.5 text-[11px] text-muted break-words">
+                        {edu.institution} · {edu.period}
+                      </div>
                     </div>
-                    <div className="mt-0.5 text-xs text-muted break-words">
-                      {edu.institution}
-                    </div>
-                    <div
-                      className="mt-2 flex flex-wrap items-center gap-x-4 gap-y-1 font-mono-label text-[11px] text-muted"
-                    >
-                      <span>{edu.period}</span>
-                      {edu.location && (
-                        <>
-                          <span>•</span>
-                          <span>{edu.location}</span>
-                        </>
-                      )}
-                    </div>
-                  </div>
-                ))}
+                  );
+                })}
               </div>
             </div>
 

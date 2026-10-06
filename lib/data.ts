@@ -260,17 +260,17 @@ export const experience = [
 export const education = [
   {
     institution: "Quaid-e-Awam University of Engineering, Science & Technology (QUEST)",
-    degree: "Bachelor of Engineering (BE) in Computer System Engineering",
-    period: "Oct 2024 – Oct 2028 (Expected)",
-    location: "Nawabshah, Sindh, Pakistan",
-    details: "2nd Year Engineering Student · 4th Semester GPA: 3.50",
+    degree: "BE Computer System Engineering",
+    period: "2024 – 2028",
+    location: "Nawabshah, PK",
+    details: "4th Sem GPA: 3.50",
   },
   {
     institution: "IBA Public School Larkana",
     degree: "Intermediate (HSSC) — Pre-Engineering",
-    period: "Aug 2022 – Aug 2024",
-    location: "Larkana, Sindh, Pakistan",
-    details: "Higher Secondary School Certificate with distinction in Pre-Engineering",
+    period: "2022 – 2024",
+    location: "Larkana, PK",
+    details: "Distinction",
   },
 ];
 
