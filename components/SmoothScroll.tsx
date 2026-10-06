@@ -7,7 +7,7 @@ export default function SmoothScroll({ children }: { children: ReactNode }) {
   const lenisRef = useRef<Lenis | null>(null);
 
   useEffect(() => {
-    // Initialize Lenis
+    // Initialize Lenis smooth scroll
     const lenis = new Lenis({
       duration: 1.2,
       easing: (t) => Math.min(1, 1.001 - Math.pow(2, -10 * t)),
@@ -20,22 +20,16 @@ export default function SmoothScroll({ children }: { children: ReactNode }) {
     
     lenisRef.current = lenis;
 
-    // Use gsap to update Lenis (more performant than requestAnimationFrame manually)
-    // Wait, let's just use requestAnimationFrame if we don't need GSAP for this specifically, but the prompt says gsap is in package.json. Let's use requestAnimationFrame for simplicity.
-    
+    let animationFrameId: number;
     function raf(time: number) {
       lenis.raf(time);
-      requestAnimationFrame(raf);
+      animationFrameId = requestAnimationFrame(raf);
     }
     
-    requestAnimationFrame(raf);
-
-    // Optional: Integrate with GSAP ScrollTrigger if used later
-    // gsap.ticker.add((time)=>{
-    //   lenis.raf(time * 1000)
-    // })
+    animationFrameId = requestAnimationFrame(raf);
 
     return () => {
+      cancelAnimationFrame(animationFrameId);
       lenis.destroy();
     };
   }, []);
