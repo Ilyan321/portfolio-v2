@@ -1,3 +1,4 @@
+import urllib.parse
 import os
 import sys
 import json
@@ -5,7 +6,6 @@ import time
 import urllib.request
 import urllib.error
 
-# Parse .env.local natively without python-dotenv
 def load_env():
     env_vars = {}
     try:
@@ -15,38 +15,57 @@ def load_env():
                 if line and not line.startswith("#"):
                     if "=" in line:
                         key, val = line.split("=", 1)
-                        # Remove quotes if they exist
                         if val.startswith('"') and val.endswith('"'):
                             val = val[1:-1]
                         env_vars[key.strip()] = val.strip()
-    except Exception as e:
-        print("Could not read .env.local", e)
+    except Exception:
+        pass
     return env_vars
 
 env = load_env()
 SUPABASE_URL = env.get("NEXT_PUBLIC_SUPABASE_URL")
 SUPABASE_KEY = env.get("SUPABASE_SERVICE_ROLE_KEY")
 GITHUB_TOKEN = env.get("GITHUB_TOKEN")
+HF_TOKEN = env.get("HF_TOKEN")
 
 if not SUPABASE_URL or not SUPABASE_KEY:
     print("❌ Missing Supabase URL or Service Role Key in .env.local")
     sys.exit(1)
 
-HF_API_URL = "https://api-inference.huggingface.co/pipeline/feature-extraction/sentence-transformers/all-MiniLM-L6-v2"
+# New Hugging Face router endpoint for feature extraction (all-MiniLM-L6-v2 produces 384d vectors)
+HF_API_URL = "https://router.huggingface.co/hf-inference/models/sentence-transformers/all-MiniLM-L6-v2"
 
-def get_embeddings(texts: list[str]) -> list[list[float]]:
+def get_embeddings(texts: list[str], retries=3) -> list[list[float]]:
     req = urllib.request.Request(HF_API_URL, method="POST")
     req.add_header("Content-Type", "application/json")
+    if HF_TOKEN:
+        req.add_header("Authorization", f"Bearer {HF_TOKEN}")
+        
     data = json.dumps({"inputs": texts}).encode("utf-8")
-    try:
-        with urllib.request.urlopen(req, data=data) as response:
-            return json.loads(response.read().decode())
-    except urllib.error.HTTPError as e:
-        print(f"⚠️ HF API Error: {e.code} - {e.read().decode()}")
-        return None
-    except Exception as e:
-        print(f"⚠️ Request Error: {str(e)}")
-        return None
+    for attempt in range(retries):
+        try:
+            with urllib.request.urlopen(req, data=data) as response:
+                return json.loads(response.read().decode())
+        except urllib.error.HTTPError as e:
+            err_body = e.read().decode()
+            if e.code == 503:
+                print("   -> HF model waking up... waiting 10s.")
+                time.sleep(10)
+                continue
+            elif e.code == 429:
+                print("   -> Rate limited... waiting 15s.")
+                time.sleep(15)
+                continue
+            elif e.code == 401:
+                print("❌ 401 Unauthorized: Please add HF_TOKEN=hf_... to your .env.local (Get free token at https://huggingface.co/settings/tokens)")
+                return None
+            else:
+                print(f"⚠️ HF API Error: {e.code} - {err_body}")
+                return None
+        except Exception as e:
+            print(f"⚠️ Request Error: {str(e)}")
+            return None
+    return None
 
 def get_github_readme(repo_url: str) -> str:
     repo_path = repo_url.replace("https://github.com/", "").strip()
@@ -78,7 +97,7 @@ def chunk_text(text: str, chunk_size: int = 1000, overlap: int = 200) -> list[st
     return chunks
 
 def supabase_rpc_delete(slug: str):
-    url = f"{SUPABASE_URL}/rest/v1/portfolio_documents?project_slug=eq.{slug}"
+    url = f"{SUPABASE_URL}/rest/v1/portfolio_documents?project_slug=eq.{urllib.parse.quote(slug)}"
     req = urllib.request.Request(url, method="DELETE")
     req.add_header("apikey", SUPABASE_KEY)
     req.add_header("Authorization", f"Bearer {SUPABASE_KEY}")
@@ -119,18 +138,12 @@ def process_repo(project):
     print(f"   -> Sliced into {len(chunks)} chunks.")
     
     rows = []
-    # Smaller batch size to prevent HF API limits
     for i in range(0, len(chunks), 4):
         batch = chunks[i:i+4]
         embeddings = get_embeddings(batch)
         if not embeddings or type(embeddings) != list:
-            # Often HF returns dict if model is loading
-            if type(embeddings) == dict and "estimated_time" in embeddings:
-                print("   -> Model loading on HF... waiting 10s.")
-                time.sleep(10)
-                embeddings = get_embeddings(batch)
-            if not embeddings or type(embeddings) != list:
-                continue
+            print("   -> Failed to get embeddings. Skipping batch.")
+            continue
         
         for j, emb in enumerate(embeddings):
             rows.append({
@@ -138,7 +151,7 @@ def process_repo(project):
                 "chunk_text": batch[j],
                 "embedding": emb
             })
-        time.sleep(2)
+        time.sleep(1)
     
     if rows:
         supabase_rpc_delete(slug)

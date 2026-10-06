@@ -32,3 +32,11 @@ yarn-error.log*
 next-env.d.ts
 .vercel
 .env*
+
+# python & temp
+__pycache__/
+*.pyc
+temp_out/
+supabase/.temp/
+test_groq_embed.py
+
