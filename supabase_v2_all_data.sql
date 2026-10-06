@@ -55,7 +55,7 @@ INSERT INTO public.v2_site_config (key, data) VALUES
 ('profile', '{
   "name": "Ilyan Khan",
   "initials": "IK",
-  "role": "Software Developer & AI Engineer / GenAI Specialist · QUEST Nawabshah · Open to Global & Remote Opportunities",
+  "role": "COMPUTER SYSTEMS ENGINEERING @ QUEST NAWABSHAH",
   "headline": "Software Developer & AI Engineer. Real-time NLP pipelines & high-speed full-stack applications.",
   "subline": "GenAI Specialist — LoRA Fine-Tuning · RAG Architectures · Next.js 15 & React · Python & C++ · Open to work: Remote / Global",
   "about": "I''m a Computer Systems Engineering student at Quaid-e-Awam University of Engineering, Science & Technology (QUEST), Nawabshah, specializing in Generative AI integration, real-time NLP pipelines, and clean full-stack web applications. I turn complex deep learning architectures (LoRA fine-tuning, vector RAG retrieval with FAISS, multi-label transformer classification) into fast, production-ready software solutions with sub-millisecond response times and robust security firewalls.",

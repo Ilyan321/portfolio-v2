@@ -1,7 +1,7 @@
 export const site = {
   name: "Ilyan Khan",
   initials: "IK",
-  role: "Software Developer & AI Engineer / GenAI Specialist · QUEST Nawabshah · Open to Global & Remote Opportunities",
+  role: "COMPUTER SYSTEMS ENGINEERING @ QUEST NAWABSHAH",
   headline: "Software Developer & AI Engineer. Real-time NLP pipelines & high-speed full-stack applications.",
   subline: "GenAI Specialist — LoRA Fine-Tuning · RAG Architectures · Next.js 15 & React · Python & C++ · Open to work: Remote / Global",
   about:
