@@ -57,7 +57,7 @@ export default function LoginPage() {
         <form onSubmit={handleLogin} className="space-y-6">
           <div className="space-y-2">
             <label className="font-mono-label block text-[10px] uppercase tracking-widest" style={{ color: "var(--muted)" }}>
-              &gt; Identification_Str
+              Username
             </label>
             <input
               type="text"
@@ -72,7 +72,7 @@ export default function LoginPage() {
           
           <div className="space-y-2">
             <label className="font-mono-label block text-[10px] uppercase tracking-widest" style={{ color: "var(--muted)" }}>
-              &gt; Security_Key
+              Password
             </label>
             <input
               type="password"
