@@ -25,7 +25,7 @@ export default function InteractiveTerminal() {
         <div className="text-zinc-400 mb-2">
           IlyanOS v2.0.0 (x86_64-linux-gnu)
           <br />
-          Type 'help' or just ask a question in plain English (powered by Groq).
+          Type &apos;help&apos; or just ask a question in plain English.
         </div>
       ),
     },
