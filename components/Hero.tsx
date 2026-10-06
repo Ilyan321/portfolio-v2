@@ -18,10 +18,10 @@ export default function Hero({
     ? dbStats
     : statsCounts
     ? [
-        { value: `${statsCounts.projects}+`, label: "Curated Projects & Models" },
-        { value: `${statsCounts.certs}`, label: "Certifications" },
-        { value: `${statsCounts.internships}`, label: "Industry Internships" },
-        { value: `${statsCounts.skills}+`, label: "Technical Skills" },
+        { value: `${statsCounts.projects}+`, label: "Projects" },
+        { value: `${statsCounts.internships}`, label: "Internships" },
+        { value: `${statsCounts.certs}`, label: "Certificates" },
+        { value: `${statsCounts.skills}+`, label: "Skills" },
       ]
     : defaultStats;
 

@@ -17,10 +17,10 @@ export const site = {
 };
 
 export const stats = [
-  { value: "99.05%", label: "Benchmark Accuracy" },
-  { value: "< 50ms", label: "Inference Latency" },
-  { value: "2", label: "Industry AI Roles" },
-  { value: "18+", label: "Curated Projects & Models" },
+  { value: "12+", label: "Projects" },
+  { value: "4", label: "Internships" },
+  { value: "7", label: "Certificates" },
+  { value: "25+", label: "Skills" },
 ];
 
 export const techStack = [
