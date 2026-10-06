@@ -1,10 +1,11 @@
 "use client";
 
 import { useState } from "react";
-import { site } from "@/lib/data";
+import { site as defaultSite } from "@/lib/data";
 import ScrollReveal from "./ScrollReveal";
 
-export default function Contact() {
+export default function Contact({ dbProfile }: { dbProfile?: any }) {
+  const site = dbProfile || defaultSite;
   const [submitted, setSubmitted] = useState(false);
   const [loading, setLoading] = useState(false);
 

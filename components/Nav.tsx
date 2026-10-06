@@ -1,6 +1,6 @@
 "use client";
 
-import { site } from "@/lib/data";
+import { site as defaultSite } from "@/lib/data";
 import ThemeToggle from "./ThemeToggle";
 
 const navItems = [
@@ -12,7 +12,8 @@ const navItems = [
   { label: "Contact", href: "#contact" },
 ];
 
-export default function Nav() {
+export default function Nav({ dbProfile }: { dbProfile?: any }) {
+  const site = dbProfile || defaultSite;
   return (
     <header
       className="fixed top-0 left-0 right-0 z-50 transition-colors"

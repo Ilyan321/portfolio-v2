@@ -1,6 +1,7 @@
-import { site } from "@/lib/data";
+import { site as defaultSite } from "@/lib/data";
 
-export default function Footer() {
+export default function Footer({ dbProfile }: { dbProfile?: any }) {
+  const site = dbProfile || defaultSite;
   return (
     <footer
       id="site-footer"

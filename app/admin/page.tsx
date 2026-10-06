@@ -1,22 +1,76 @@
 import { supabaseAdmin } from "@/lib/supabase";
-import { ProjectsAdmin } from "@/components/admin/ProjectsAdmin";
-import { CertsAdmin } from "@/components/admin/CertsAdmin";
-import { RAGAdmin } from "@/components/admin/RAGAdmin";
+import { site, stats, techStack, researchSpotlight, experience, education } from "@/lib/data";
+import { AdminDashboardClient } from "@/components/admin/AdminDashboardClient";
+
+export const dynamic = "force-dynamic";
 
 export default async function AdminPage() {
-  let projects = [];
-  let certs = [];
+  // Defaults from lib/data.ts
+  let profileData = {
+    name: site.name,
+    initials: site.initials,
+    role: site.role,
+    headline: site.headline,
+    subline: site.subline,
+    about: site.about,
+    location: site.location,
+    cvUrl: site.cvUrl,
+  };
+
+  let contactsData = {
+    email: site.email,
+    phone: site.phone,
+    whatsapp: site.whatsapp,
+    github: site.github,
+    linkedin: site.linkedin,
+    huggingface: site.huggingface,
+  };
+
+  let statsData = stats;
+  let techStackData = techStack;
+  let spotlightData = researchSpotlight;
+  let experienceData: any[] = experience.map((e, idx) => ({ id: `default-${idx}`, ...e, position: idx }));
+  let educationData: any[] = education.map((e, idx) => ({ id: `default-${idx}`, ...e, position: idx }));
+  let projects: any[] = [];
+  let certs: any[] = [];
   let indexedDocs: { slug: string; chunkCount: number; sample: string }[] = [];
 
   try {
     if (process.env.NEXT_PUBLIC_SUPABASE_URL && process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY) {
+      // 1. Fetch site configs
+      const { data: configs } = await supabaseAdmin.from("v2_site_config").select("key, data");
+      if (configs) {
+        for (const row of configs) {
+          if (row.key === "profile" && row.data) profileData = { ...profileData, ...row.data };
+          if (row.key === "contacts" && row.data) contactsData = { ...contactsData, ...row.data };
+          if (row.key === "stats" && Array.isArray(row.data) && row.data.length > 0) statsData = row.data;
+          if (row.key === "tech_stack" && Array.isArray(row.data) && row.data.length > 0) techStackData = row.data;
+          if (row.key === "spotlight" && row.data) spotlightData = { ...spotlightData, ...row.data };
+        }
+      }
+
+      // 2. Fetch experience
+      const { data: exp } = await supabaseAdmin
+        .from("v2_experience")
+        .select("*")
+        .order("position", { ascending: true });
+      if (exp && exp.length > 0) experienceData = exp;
+
+      // 3. Fetch education
+      const { data: edu } = await supabaseAdmin
+        .from("v2_education")
+        .select("*")
+        .order("position", { ascending: true });
+      if (edu && edu.length > 0) educationData = edu;
+
+      // 4. Fetch projects & certs
       const { data: p } = await supabaseAdmin.from("v2_projects").select("*").order("position", { ascending: true });
       const { data: c } = await supabaseAdmin.from("v2_certifications").select("*").order("position", { ascending: true });
-      const { data: docs } = await supabaseAdmin.from("portfolio_documents").select("id, project_slug, chunk_text");
-
       if (p) projects = p;
       if (c) certs = c;
 
+      // 5. Fetch RAG indexed docs summary
+      const { data: docs } = await supabaseAdmin.from("portfolio_documents").select("id, project_slug, chunk_text");
       if (docs) {
         const summary: Record<string, { slug: string; chunkCount: number; sample: string }> = {};
         for (const doc of docs) {
@@ -34,34 +88,21 @@ export default async function AdminPage() {
       }
     }
   } catch (error) {
-    console.error(error);
+    console.error("Admin data loading error:", error);
   }
 
   return (
-    <div className="space-y-16 py-8">
-      <section>
-        <div className="flex items-center gap-3 mb-6">
-          <span className="font-mono-label text-xs uppercase tracking-widest" style={{ color: "var(--accent)" }}>01 //</span>
-          <h2 className="font-display text-2xl font-medium" style={{ color: "var(--ink)" }}>Manage Projects</h2>
-        </div>
-        <ProjectsAdmin initialProjects={projects || []} />
-      </section>
-
-      <section>
-        <div className="flex items-center gap-3 mb-6">
-          <span className="font-mono-label text-xs uppercase tracking-widest" style={{ color: "var(--accent)" }}>02 //</span>
-          <h2 className="font-display text-2xl font-medium" style={{ color: "var(--ink)" }}>Manage Certifications</h2>
-        </div>
-        <CertsAdmin initialCerts={certs || []} />
-      </section>
-
-      <section>
-        <div className="flex items-center gap-3 mb-6">
-          <span className="font-mono-label text-xs uppercase tracking-widest" style={{ color: "var(--accent)" }}>03 //</span>
-          <h2 className="font-display text-2xl font-medium" style={{ color: "var(--ink)" }}>RAG Brain & Vector Ingestion</h2>
-        </div>
-        <RAGAdmin initialIndexedDocs={indexedDocs} />
-      </section>
-    </div>
+    <AdminDashboardClient
+      initialProfile={profileData}
+      initialContacts={contactsData}
+      initialExperience={experienceData}
+      initialEducation={educationData}
+      initialStats={statsData}
+      initialTechStack={techStackData}
+      initialSpotlight={spotlightData}
+      initialProjects={projects}
+      initialCerts={certs}
+      initialIndexedDocs={indexedDocs}
+    />
   );
 }

@@ -1,116 +1,122 @@
-import { researchSpotlight } from "@/lib/data";
+import { researchSpotlight as defaultSpotlight } from "@/lib/data";
 import ScanLine from "./ScanLine";
 import ScrollReveal from "./ScrollReveal";
 
-export default function ResearchSpotlight() {
+export default function ResearchSpotlight({ dbSpotlight }: { dbSpotlight?: any }) {
+  const spotlight = dbSpotlight || defaultSpotlight;
+
   return (
     <section id="research" className="relative border-t py-28" style={{ borderColor: "var(--border)" }}>
       <ScanLine targetId="research" />
       <ScrollReveal width="100%">
         <div className="container-px">
-        <span
-          className="font-mono-label text-xs uppercase"
-          style={{ color: "var(--accent)" }}
-        >
-          {researchSpotlight.eyebrow}
-        </span>
-
-        <h2
-          className="font-display mt-3 max-w-3xl text-3xl font-medium leading-tight md:text-4xl"
-          style={{ color: "var(--ink)" }}
-        >
-          {researchSpotlight.title}
-        </h2>
-
-        <p
-          className="mt-5 max-w-2xl text-base leading-relaxed md:text-lg"
-          style={{ color: "var(--muted)" }}
-        >
-          {researchSpotlight.description}
-        </p>
-
-        <div className="mt-8 flex flex-wrap gap-8">
-          {researchSpotlight.stats.map((s) => (
-            <div key={s.sub}>
-              <div className="font-mono-label text-2xl font-bold" style={{ color: "var(--accent)" }}>
-                {s.label}
-              </div>
-              <div className="font-mono-label text-xs uppercase" style={{ color: "var(--muted)" }}>
-                {s.sub}
-              </div>
-            </div>
-          ))}
-        </div>
-
-        <div className="mt-6 flex flex-wrap gap-2">
-          {researchSpotlight.stackTags.map((tag) => (
-            <span
-              key={tag}
-              className="chip font-mono-label rounded-sm border px-2.5 py-1 text-[11px]"
-              style={{ borderColor: "var(--border)", color: "var(--ink)", backgroundColor: "var(--panel)" }}
-            >
-              {tag}
-            </span>
-          ))}
-        </div>
-
-        <div className="mt-8 flex flex-wrap gap-4">
-          <a
-            href={researchSpotlight.link}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="rounded-sm px-6 py-3 font-mono-label text-xs font-semibold uppercase tracking-wider transition-transform hover:-translate-y-0.5 shadow-sm"
-            style={{ backgroundColor: "var(--accent)", color: "var(--bg)" }}
+          <span
+            className="font-mono-label text-xs uppercase"
+            style={{ color: "var(--accent)" }}
           >
-            View GitHub Repository
-          </a>
-          <a
-            href={researchSpotlight.huggingFaceLink}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="chip rounded-sm border px-6 py-3 font-mono-label text-xs font-semibold uppercase tracking-wider transition-transform hover:-translate-y-0.5"
-            style={{ borderColor: "var(--border)", color: "var(--ink)", backgroundColor: "var(--panel)" }}
-          >
-            Hugging Face Model
-          </a>
-        </div>
+            {spotlight.eyebrow}
+          </span>
 
-        {/* diagnostic report layout: generative diagram + findings panel */}
-        <div
-          id="research-report"
-          className="relative mt-16 grid grid-cols-1 gap-px overflow-hidden rounded-sm border md:grid-cols-2"
-          style={{ borderColor: "var(--border)" }}
-        >
-          <ScanLine targetId="research-report" />
-          <div
-            className="relative flex h-64 items-center justify-center p-6 md:h-auto"
-            style={{ backgroundColor: "var(--panel)" }}
+          <h2
+            className="font-display mt-3 max-w-3xl text-3xl font-medium leading-tight md:text-4xl break-words"
+            style={{ color: "var(--ink)" }}
           >
-            <ASTSecurityVisualizer />
-          </div>
-          <div className="p-8" style={{ backgroundColor: "var(--panel)" }}>
-            <div className="font-mono-label mb-4 text-[11px] uppercase tracking-wider" style={{ color: "var(--accent)" }}>
-              Architecture Diagnostics & Safeguards
-            </div>
-            <dl className="space-y-4">
-              {researchSpotlight.diagnostics.map((row, i) => (
-                <div
-                  key={row.term}
-                  className="flex flex-col gap-1 border-t pt-3 sm:flex-row sm:items-baseline sm:justify-between sm:gap-4"
-                  style={{ borderColor: i === 0 ? "transparent" : "var(--border)" }}
-                >
-                  <dt className="font-mono-label text-xs uppercase" style={{ color: "var(--muted)" }}>
-                    {row.term}
-                  </dt>
-                  <dd className="font-mono-label text-xs sm:text-right" style={{ color: "var(--ink)" }}>
-                    {row.value}
-                  </dd>
+            {spotlight.title}
+          </h2>
+
+          <p
+            className="mt-5 max-w-2xl text-base leading-relaxed md:text-lg whitespace-pre-line"
+            style={{ color: "var(--muted)" }}
+          >
+            {spotlight.description}
+          </p>
+
+          <div className="mt-8 flex flex-wrap gap-8">
+            {(spotlight.stats || []).map((s: any, idx: number) => (
+              <div key={idx}>
+                <div className="font-mono-label text-2xl font-bold" style={{ color: "var(--accent)" }}>
+                  {s.label}
                 </div>
-              ))}
-            </dl>
+                <div className="font-mono-label text-xs uppercase" style={{ color: "var(--muted)" }}>
+                  {s.sub}
+                </div>
+              </div>
+            ))}
+          </div>
+
+          <div className="mt-6 flex flex-wrap gap-2">
+            {(spotlight.stackTags || []).map((tag: string, idx: number) => (
+              <span
+                key={idx}
+                className="chip font-mono-label rounded-sm border px-2.5 py-1 text-[11px]"
+                style={{ borderColor: "var(--border)", color: "var(--ink)", backgroundColor: "var(--panel)" }}
+              >
+                {tag}
+              </span>
+            ))}
+          </div>
+
+          <div className="mt-8 flex flex-wrap gap-4">
+            {spotlight.link && (
+              <a
+                href={spotlight.link}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="rounded-sm px-6 py-3 font-mono-label text-xs font-semibold uppercase tracking-wider transition-transform hover:-translate-y-0.5 shadow-sm cursor-pointer"
+                style={{ backgroundColor: "var(--accent)", color: "var(--bg)" }}
+              >
+                View GitHub Repository
+              </a>
+            )}
+            {spotlight.huggingFaceLink && (
+              <a
+                href={spotlight.huggingFaceLink}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="chip rounded-sm border px-6 py-3 font-mono-label text-xs font-semibold uppercase tracking-wider transition-transform hover:-translate-y-0.5 cursor-pointer"
+                style={{ borderColor: "var(--border)", color: "var(--ink)", backgroundColor: "var(--panel)" }}
+              >
+                Hugging Face Model
+              </a>
+            )}
+          </div>
+
+          {/* Diagnostic report layout: generative diagram + findings panel */}
+          <div
+            id="research-report"
+            className="relative mt-16 grid grid-cols-1 gap-px overflow-hidden rounded-sm border md:grid-cols-2"
+            style={{ borderColor: "var(--border)" }}
+          >
+            <ScanLine targetId="research-report" />
+            <div
+              className="relative flex h-64 items-center justify-center p-6 md:h-auto"
+              style={{ backgroundColor: "var(--panel)" }}
+            >
+              <ASTSecurityVisualizer />
+            </div>
+            <div className="p-8" style={{ backgroundColor: "var(--panel)" }}>
+              <div className="font-mono-label mb-4 text-[11px] uppercase tracking-wider" style={{ color: "var(--accent)" }}>
+                Architecture Diagnostics & Safeguards
+              </div>
+              <dl className="space-y-4">
+                {(spotlight.diagnostics || []).map((row: any, i: number) => (
+                  <div
+                    key={i}
+                    className="flex flex-col gap-1 border-t pt-3 sm:flex-row sm:items-baseline sm:justify-between sm:gap-4"
+                    style={{ borderColor: i === 0 ? "transparent" : "var(--border)" }}
+                  >
+                    <dt className="font-mono-label text-xs uppercase break-words" style={{ color: "var(--muted)" }}>
+                      {row.term}
+                    </dt>
+                    <dd className="font-mono-label text-xs sm:text-right break-words" style={{ color: "var(--ink)" }}>
+                      {row.value}
+                    </dd>
+                  </div>
+                ))}
+              </dl>
+            </div>
           </div>
         </div>
-      </div>
       </ScrollReveal>
     </section>
   );

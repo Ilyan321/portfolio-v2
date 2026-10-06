@@ -80,6 +80,103 @@ export async function updateCert(id: string, data: any) {
 }
 
 // ----------------------------------------------------
+// Dynamic Site Configuration Server Actions
+// ----------------------------------------------------
+
+export async function saveSiteConfig(key: string, data: any) {
+  try {
+    checkAuth();
+    const { error } = await supabaseAdmin.from("v2_site_config").upsert({
+      key,
+      data,
+      updated_at: new Date().toISOString(),
+    });
+    if (error) return { success: false, error: error.message };
+    revalidatePath("/");
+    revalidatePath("/admin");
+    return { success: true };
+  } catch (err: any) {
+    return { success: false, error: err.message };
+  }
+}
+
+// ----------------------------------------------------
+// Experience Timeline Server Actions
+// ----------------------------------------------------
+
+export async function createExperience(data: any) {
+  checkAuth();
+  const { data: newExp, error } = await supabaseAdmin.from("v2_experience").insert([data]).select().single();
+  if (error) throw new Error(error.message);
+  revalidatePath("/");
+  revalidatePath("/admin");
+  return newExp;
+}
+
+export async function updateExperience(id: string, data: any) {
+  checkAuth();
+  const { data: updatedExp, error } = await supabaseAdmin.from("v2_experience").update(data).eq("id", id).select().single();
+  if (error) throw new Error(error.message);
+  revalidatePath("/");
+  revalidatePath("/admin");
+  return updatedExp;
+}
+
+export async function deleteExperience(id: string) {
+  checkAuth();
+  await supabaseAdmin.from("v2_experience").delete().eq("id", id);
+  revalidatePath("/");
+  revalidatePath("/admin");
+}
+
+export async function updateExperiencePositions(updates: { id: string; position: number }[]) {
+  checkAuth();
+  for (const update of updates) {
+    await supabaseAdmin.from("v2_experience").update({ position: update.position }).eq("id", update.id);
+  }
+  revalidatePath("/");
+  revalidatePath("/admin");
+}
+
+// ----------------------------------------------------
+// Education Server Actions
+// ----------------------------------------------------
+
+export async function createEducation(data: any) {
+  checkAuth();
+  const { data: newEdu, error } = await supabaseAdmin.from("v2_education").insert([data]).select().single();
+  if (error) throw new Error(error.message);
+  revalidatePath("/");
+  revalidatePath("/admin");
+  return newEdu;
+}
+
+export async function updateEducation(id: string, data: any) {
+  checkAuth();
+  const { data: updatedEdu, error } = await supabaseAdmin.from("v2_education").update(data).eq("id", id).select().single();
+  if (error) throw new Error(error.message);
+  revalidatePath("/");
+  revalidatePath("/admin");
+  return updatedEdu;
+}
+
+export async function deleteEducation(id: string) {
+  checkAuth();
+  await supabaseAdmin.from("v2_education").delete().eq("id", id);
+  revalidatePath("/");
+  revalidatePath("/admin");
+}
+
+export async function updateEducationPositions(updates: { id: string; position: number }[]) {
+  checkAuth();
+  for (const update of updates) {
+    await supabaseAdmin.from("v2_education").update({ position: update.position }).eq("id", update.id);
+  }
+  revalidatePath("/");
+  revalidatePath("/admin");
+}
+
+// ----------------------------------------------------
 // RAG & Vector Knowledge Base Server Actions
 // ----------------------------------------------------
 
