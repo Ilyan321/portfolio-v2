@@ -5,7 +5,7 @@ export const site = {
   headline: "Software Developer & AI Engineer. Real-time NLP pipelines & high-speed full-stack applications.",
   subline: "GenAI Specialist — LoRA Fine-Tuning · RAG Architectures · Next.js 15 & React · Python & C++ · Open to work: Remote / Global",
   about:
-    "I'm a Computer Systems Engineering student at Quaid-e-Awam University of Engineering, Science & Technology (QUEST), Nawabshah, specializing in Generative AI integration, real-time NLP pipelines, and clean full-stack web applications. I turn complex deep learning architectures (LoRA fine-tuning, vector RAG retrieval with FAISS, multi-label transformer classification) into fast, production-ready software solutions with sub-millisecond response times and robust security firewalls.",
+    "Computer Systems Engineering student at QUEST Nawabshah architecting real-time Generative AI pipelines and high-performance full-stack software.\n\nFocused on turning deep learning research (LoRA fine-tuning, vector RAG retrieval, and AST security firewalls) into fast, production-grade software.",
   github: "https://github.com/Ilyan321",
   linkedin: "https://linkedin.com/in/ilyan-khan-480341359",
   huggingface: "https://huggingface.co/Ilyankhan69",
