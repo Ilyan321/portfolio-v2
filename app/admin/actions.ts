@@ -70,6 +70,38 @@ export async function updateProject(id: string, data: any) {
   return updatedProj;
 }
 
+export async function toggleProjectVisibility(id: string, isHidden: boolean) {
+  checkAuth();
+  try {
+    const { data: updatedProj } = await supabaseAdmin
+      .from("v2_projects")
+      .update({ hidden: isHidden })
+      .eq("id", id)
+      .select()
+      .single();
+    
+    // Also sync to hidden_items fallback in v2_site_config
+    const { data: cfgRow } = await supabaseAdmin.from("v2_site_config").select("data").eq("key", "hidden_items").single();
+    const currentHidden = cfgRow?.data?.projects || [];
+    const newHiddenList = isHidden 
+      ? Array.from(new Set([...currentHidden, id])) 
+      : currentHidden.filter((item: string) => item !== id);
+    
+    await supabaseAdmin.from("v2_site_config").upsert({
+      key: "hidden_items",
+      data: { ...(cfgRow?.data || {}), projects: newHiddenList },
+      updated_at: new Date().toISOString()
+    });
+
+    revalidatePath("/");
+    revalidatePath("/admin");
+    return { success: true, hidden: isHidden, project: updatedProj };
+  } catch (err: any) {
+    console.error("toggleProjectVisibility error:", err);
+    return { success: false, error: err.message };
+  }
+}
+
 export async function updateCert(id: string, data: any) {
   checkAuth();
   const { data: updatedCert, error } = await supabaseAdmin.from("v2_certifications").update(data).eq("id", id).select().single();
@@ -77,6 +109,38 @@ export async function updateCert(id: string, data: any) {
   revalidatePath("/");
   revalidatePath("/admin");
   return updatedCert;
+}
+
+export async function toggleCertVisibility(id: string, isHidden: boolean) {
+  checkAuth();
+  try {
+    const { data: updatedCert } = await supabaseAdmin
+      .from("v2_certifications")
+      .update({ hidden: isHidden })
+      .eq("id", id)
+      .select()
+      .single();
+    
+    // Also sync to hidden_items fallback in v2_site_config
+    const { data: cfgRow } = await supabaseAdmin.from("v2_site_config").select("data").eq("key", "hidden_items").single();
+    const currentHidden = cfgRow?.data?.certs || [];
+    const newHiddenList = isHidden 
+      ? Array.from(new Set([...currentHidden, id])) 
+      : currentHidden.filter((item: string) => item !== id);
+    
+    await supabaseAdmin.from("v2_site_config").upsert({
+      key: "hidden_items",
+      data: { ...(cfgRow?.data || {}), certs: newHiddenList },
+      updated_at: new Date().toISOString()
+    });
+
+    revalidatePath("/");
+    revalidatePath("/admin");
+    return { success: true, hidden: isHidden, cert: updatedCert };
+  } catch (err: any) {
+    console.error("toggleCertVisibility error:", err);
+    return { success: false, error: err.message };
+  }
 }
 
 // ----------------------------------------------------

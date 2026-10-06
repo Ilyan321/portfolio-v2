@@ -67,6 +67,12 @@ export default async function Home() {
   const experienceData = dbExperience.length > 0 ? dbExperience : defaultExperience;
   const educationData = dbEducation.length > 0 ? dbEducation : defaultEducation;
 
+  const hiddenProjects: string[] = dbConfigs["hidden_items"]?.projects || [];
+  const hiddenCerts: string[] = dbConfigs["hidden_items"]?.certs || [];
+
+  const visibleProjects = dbProjects.filter((p: any) => p.hidden !== true && !hiddenProjects.includes(p.id));
+  const visibleCerts = dbCerts.filter((c: any) => c.hidden !== true && !hiddenCerts.includes(c.id));
+
   return (
     <div className="relative min-h-screen">
       <Nav dbProfile={profileData} />
@@ -75,8 +81,8 @@ export default async function Home() {
           dbProfile={profileData} 
           dbStats={statsData}
           statsCounts={{ 
-            projects: dbProjects.length || 12, 
-            certs: dbCerts.length || 7, 
+            projects: visibleProjects.length || 12, 
+            certs: visibleCerts.length || 7, 
             internships: experienceData.length, 
             skills: techStackData.reduce((acc: number, g: any) => acc + (g.items?.length || 0), 0) 
           }} 
@@ -87,9 +93,9 @@ export default async function Home() {
           dbTechStack={techStackData}
         />
         <ResearchSpotlight dbSpotlight={spotlightData} />
-        <Projects dbProjects={dbProjects} />
+        <Projects dbProjects={visibleProjects} />
         <Experience dbExperience={experienceData} />
-        <Certificates dbCerts={dbCerts} />
+        <Certificates dbCerts={visibleCerts} />
         <Contact dbProfile={profileData} />
       </main>
       <Footer dbProfile={profileData} />

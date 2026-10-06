@@ -35,6 +35,9 @@ export default async function AdminPage() {
   let certs: any[] = [];
   let indexedDocs: { slug: string; chunkCount: number; sample: string }[] = [];
 
+  let hiddenProjects: string[] = [];
+  let hiddenCerts: string[] = [];
+
   try {
     if (process.env.NEXT_PUBLIC_SUPABASE_URL && process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY) {
       // 1. Fetch site configs
@@ -46,6 +49,10 @@ export default async function AdminPage() {
           if (row.key === "stats" && Array.isArray(row.data) && row.data.length > 0) statsData = row.data;
           if (row.key === "tech_stack" && Array.isArray(row.data) && row.data.length > 0) techStackData = row.data;
           if (row.key === "spotlight" && row.data) spotlightData = { ...spotlightData, ...row.data };
+          if (row.key === "hidden_items" && row.data) {
+            hiddenProjects = row.data.projects || [];
+            hiddenCerts = row.data.certs || [];
+          }
         }
       }
 
@@ -66,8 +73,19 @@ export default async function AdminPage() {
       // 4. Fetch projects & certs
       const { data: p } = await supabaseAdmin.from("v2_projects").select("*").order("position", { ascending: true });
       const { data: c } = await supabaseAdmin.from("v2_certifications").select("*").order("position", { ascending: true });
-      if (p) projects = p;
-      if (c) certs = c;
+
+      if (p) {
+        projects = p.map((item: any) => ({
+          ...item,
+          hidden: item.hidden === true || hiddenProjects.includes(item.id)
+        }));
+      }
+      if (c) {
+        certs = c.map((item: any) => ({
+          ...item,
+          hidden: item.hidden === true || hiddenCerts.includes(item.id)
+        }));
+      }
 
       // 5. Fetch RAG indexed docs summary
       const { data: docs } = await supabaseAdmin.from("portfolio_documents").select("id, project_slug, chunk_text");

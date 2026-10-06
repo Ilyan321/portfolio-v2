@@ -4,7 +4,7 @@ import { useState } from "react";
 import ScrollReveal from "./ScrollReveal";
 
 export default function Certificates({ dbCerts }: { dbCerts?: any[] }) {
-  const activeCerts = dbCerts || [];
+  const activeCerts = (dbCerts || []).filter((c) => c.hidden !== true && c.is_hidden !== true);
   const [showAll, setShowAll] = useState(false);
   const displayedCerts = showAll ? activeCerts : activeCerts.slice(0, 4);
 

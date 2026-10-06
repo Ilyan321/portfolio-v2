@@ -4,7 +4,7 @@ import { useState } from "react";
 import { DndContext, closestCenter, KeyboardSensor, PointerSensor, useSensor, useSensors, DragEndEvent } from "@dnd-kit/core";
 import { arrayMove, SortableContext, sortableKeyboardCoordinates, verticalListSortingStrategy } from "@dnd-kit/sortable";
 import { SortableItem } from "./SortableItem";
-import { updateProjectPositions, deleteProject, createProject, updateProject } from "@/app/admin/actions";
+import { updateProjectPositions, deleteProject, createProject, updateProject, toggleProjectVisibility } from "@/app/admin/actions";
 
 export function ProjectsAdmin({ initialProjects }: { initialProjects: any[] }) {
   const [projects, setProjects] = useState(initialProjects);
@@ -17,6 +17,7 @@ export function ProjectsAdmin({ initialProjects }: { initialProjects: any[] }) {
   const [newLink, setNewLink] = useState("");
   const [newGithub, setNewGithub] = useState("");
   const [newTags, setNewTags] = useState("");
+  const [newHidden, setNewHidden] = useState(false);
   
   const sensors = useSensors(
     useSensor(PointerSensor, { activationConstraint: { distance: 5 } }),
@@ -47,6 +48,7 @@ export function ProjectsAdmin({ initialProjects }: { initialProjects: any[] }) {
     setNewLink("");
     setNewGithub("");
     setNewTags("");
+    setNewHidden(false);
   }
 
   function startEditing(p: any) {
@@ -67,11 +69,18 @@ export function ProjectsAdmin({ initialProjects }: { initialProjects: any[] }) {
     setNewLink(p.link || "");
     setNewGithub(p.github || "");
     setNewTags(p.tags ? p.tags.join(", ") : "");
+    setNewHidden(!!p.hidden);
   }
 
   function cancelEdit() {
     setEditingId(null);
     setIsAdding(false);
+  }
+
+  async function handleToggleHide(id: string, currentHidden: boolean) {
+    const nextHidden = !currentHidden;
+    setProjects(projects.map(p => p.id === id ? { ...p, hidden: nextHidden } : p));
+    await toggleProjectVisibility(id, nextHidden);
   }
 
   async function handleSave(e: React.FormEvent, id?: string) {
@@ -84,19 +93,20 @@ export function ProjectsAdmin({ initialProjects }: { initialProjects: any[] }) {
       description: newDesc, 
       link: newLink, 
       github: newGithub,
-      tags: tagArray
+      tags: tagArray,
+      hidden: newHidden
     };
 
     if (id) {
       const updatedProj = await updateProject(id, data);
       if (updatedProj) {
-        setProjects(projects.map(p => p.id === id ? updatedProj : p));
+        setProjects(projects.map(p => p.id === id ? { ...updatedProj, hidden: newHidden } : p));
       }
       setEditingId(null);
     } else {
       const newProj = await createProject({ ...data, position: projects.length });
       if (newProj) {
-        setProjects([...projects, newProj]);
+        setProjects([...projects, { ...newProj, hidden: newHidden }]);
       }
       setIsAdding(false);
     }
@@ -139,6 +149,19 @@ export function ProjectsAdmin({ initialProjects }: { initialProjects: any[] }) {
           <input type="text" value={newGithub} onChange={e => setNewGithub(e.target.value)} className="w-full font-body text-sm rounded-sm border p-3 outline-none transition-all focus:border-emerald-500" style={{ backgroundColor: "var(--bg)", borderColor: "var(--border)", color: "var(--ink)" }} />
         </div>
       </div>
+
+      <div className="flex items-center gap-3 pt-2">
+        <input 
+          type="checkbox" 
+          id="project-hidden" 
+          checked={newHidden} 
+          onChange={e => setNewHidden(e.target.checked)} 
+          className="rounded border-border accent-accent h-4 w-4 cursor-pointer"
+        />
+        <label htmlFor="project-hidden" className="font-mono-label text-xs uppercase tracking-wider cursor-pointer" style={{ color: "var(--muted)" }}>
+          Hide from public portfolio (keep in admin)
+        </label>
+      </div>
       
       <div className="flex gap-4 pt-4 border-t" style={{ borderColor: "var(--border)" }}>
         <button type="submit" className="font-mono-label text-xs uppercase tracking-widest px-6 py-3 rounded-sm transition-colors cursor-pointer" style={{ backgroundColor: "var(--accent)", color: "var(--bg)" }}>
@@ -163,13 +186,15 @@ export function ProjectsAdmin({ initialProjects }: { initialProjects: any[] }) {
                 taglineStr = parts[1] || "";
               }
 
+              const isHidden = !!project.hidden;
+
               return (
                 <SortableItem key={project.id} id={project.id}>
                   {editingId === project.id ? (
                     renderForm(project.id)
                   ) : (
                     <div 
-                      className="flex flex-col sm:flex-row justify-between items-start sm:items-center p-4 sm:p-5 rounded-sm border w-full min-w-0 gap-4"
+                      className={`flex flex-col sm:flex-row justify-between items-start sm:items-center p-4 sm:p-5 rounded-sm border w-full min-w-0 gap-4 transition-opacity ${isHidden ? "opacity-60 bg-amber-500/[0.03]" : ""}`}
                       style={{ borderColor: "var(--border)", backgroundColor: "var(--panel)" }}
                     >
                       <div className="flex-1 min-w-0 w-full">
@@ -177,6 +202,11 @@ export function ProjectsAdmin({ initialProjects }: { initialProjects: any[] }) {
                           <h3 className="font-display text-lg break-words" style={{ color: "var(--ink)" }}>{titleStr}</h3>
                           {taglineStr && (
                             <span className="font-mono-label text-xs uppercase tracking-wider break-words" style={{ color: "var(--muted)" }}>{taglineStr}</span>
+                          )}
+                          {isHidden && (
+                            <span className="font-mono-label text-[10px] uppercase tracking-wider px-2 py-0.5 rounded-sm bg-amber-500/10 text-amber-700 dark:text-amber-400 border border-amber-500/30">
+                              Hidden
+                            </span>
                           )}
                         </div>
                         <p className="text-sm mt-1 whitespace-pre-wrap break-words opacity-80" style={{ color: "var(--muted)" }}>{project.description}</p>
@@ -186,7 +216,18 @@ export function ProjectsAdmin({ initialProjects }: { initialProjects: any[] }) {
                           ))}
                         </div>
                       </div>
-                      <div className="flex-shrink-0 flex gap-2 self-start sm:self-center">
+                      <div className="flex-shrink-0 flex items-center gap-2 self-start sm:self-center flex-wrap">
+                        <button 
+                          onClick={() => handleToggleHide(project.id, isHidden)} 
+                          className={`font-mono-label text-xs uppercase tracking-wider px-3 sm:px-4 py-1.5 sm:py-2 border rounded-sm transition-colors cursor-pointer flex items-center gap-1.5 ${
+                            isHidden
+                              ? "bg-amber-500/10 text-amber-700 dark:text-amber-400 border-amber-500/30 hover:bg-amber-500/20"
+                              : "border-border text-muted hover:text-ink hover:bg-white/[0.02]"
+                          }`}
+                          title={isHidden ? "Unhide project on public portfolio" : "Hide project from public portfolio"}
+                        >
+                          {isHidden ? "👁‍🗨 Hidden" : "👁 Visible"}
+                        </button>
                         <button onClick={() => startEditing(project)} className="font-mono-label text-xs uppercase tracking-wider px-3 sm:px-4 py-1.5 sm:py-2 border rounded-sm transition-colors cursor-pointer hover:bg-white/[0.02]" style={{ borderColor: "var(--border)", color: "var(--ink)" }}>
                           Edit
                         </button>

@@ -4,7 +4,7 @@ import { useState } from "react";
 import { DndContext, closestCenter, KeyboardSensor, PointerSensor, useSensor, useSensors, DragEndEvent } from "@dnd-kit/core";
 import { arrayMove, SortableContext, sortableKeyboardCoordinates, verticalListSortingStrategy } from "@dnd-kit/sortable";
 import { SortableItem } from "./SortableItem";
-import { updateCertPositions, deleteCert, createCert, updateCert } from "@/app/admin/actions";
+import { updateCertPositions, deleteCert, createCert, updateCert, toggleCertVisibility } from "@/app/admin/actions";
 
 export function CertsAdmin({ initialCerts }: { initialCerts: any[] }) {
   const [certs, setCerts] = useState(initialCerts);
@@ -17,6 +17,7 @@ export function CertsAdmin({ initialCerts }: { initialCerts: any[] }) {
   const [newTag, setNewTag] = useState("");
   const [newDate, setNewDate] = useState("");
   const [newLink, setNewLink] = useState("");
+  const [newHidden, setNewHidden] = useState(false);
   
   const sensors = useSensors(
     useSensor(PointerSensor, { activationConstraint: { distance: 5 } }),
@@ -47,6 +48,7 @@ export function CertsAdmin({ initialCerts }: { initialCerts: any[] }) {
     setNewTag("");
     setNewDate("");
     setNewLink("");
+    setNewHidden(false);
   }
 
   function startEditing(c: any) {
@@ -69,11 +71,18 @@ export function CertsAdmin({ initialCerts }: { initialCerts: any[] }) {
     setNewTag(tag);
     setNewDate(c.date);
     setNewLink(c.link || "");
+    setNewHidden(!!c.hidden);
   }
 
   function cancelEdit() {
     setEditingId(null);
     setIsAdding(false);
+  }
+
+  async function handleToggleHide(id: string, currentHidden: boolean) {
+    const nextHidden = !currentHidden;
+    setCerts(certs.map(c => c.id === id ? { ...c, hidden: nextHidden } : c));
+    await toggleCertVisibility(id, nextHidden);
   }
 
   async function handleSave(e: React.FormEvent, id?: string) {
@@ -85,19 +94,20 @@ export function CertsAdmin({ initialCerts }: { initialCerts: any[] }) {
       title: newTitle, 
       issuer: combinedIssuer, 
       date: newDate, 
-      link: newLink
+      link: newLink,
+      hidden: newHidden
     };
 
     if (id) {
       const updatedCert = await updateCert(id, data);
       if (updatedCert) {
-        setCerts(certs.map(c => c.id === id ? updatedCert : c));
+        setCerts(certs.map(c => c.id === id ? { ...updatedCert, hidden: newHidden } : c));
       }
       setEditingId(null);
     } else {
       const newCert = await createCert({ ...data, position: certs.length });
       if (newCert) {
-        setCerts([...certs, newCert]);
+        setCerts([...certs, { ...newCert, hidden: newHidden }]);
       }
       setIsAdding(false);
     }
@@ -140,6 +150,19 @@ export function CertsAdmin({ initialCerts }: { initialCerts: any[] }) {
           <input type="text" value={newLink} onChange={e => setNewLink(e.target.value)} className="w-full font-body text-sm rounded-sm border p-3 outline-none transition-all focus:border-emerald-500" style={{ backgroundColor: "var(--bg)", borderColor: "var(--border)", color: "var(--ink)" }} />
         </div>
       </div>
+
+      <div className="flex items-center gap-3 pt-2">
+        <input 
+          type="checkbox" 
+          id="cert-hidden" 
+          checked={newHidden} 
+          onChange={e => setNewHidden(e.target.checked)} 
+          className="rounded border-border accent-accent h-4 w-4 cursor-pointer"
+        />
+        <label htmlFor="cert-hidden" className="font-mono-label text-xs uppercase tracking-wider cursor-pointer" style={{ color: "var(--muted)" }}>
+          Hide from public portfolio (keep in admin)
+        </label>
+      </div>
       
       <div className="flex gap-4 pt-4 border-t" style={{ borderColor: "var(--border)" }}>
         <button type="submit" className="font-mono-label text-xs uppercase tracking-widest px-6 py-3 rounded-sm transition-colors cursor-pointer" style={{ backgroundColor: "var(--accent)", color: "var(--bg)" }}>
@@ -166,13 +189,15 @@ export function CertsAdmin({ initialCerts }: { initialCerts: any[] }) {
                 tag = parts[2] || "";
               }
 
+              const isHidden = !!cert.hidden;
+
               return (
                 <SortableItem key={cert.id} id={cert.id}>
                   {editingId === cert.id ? (
                     renderForm(cert.id)
                   ) : (
                     <div 
-                      className="flex flex-col sm:flex-row justify-between items-start sm:items-center p-4 sm:p-5 rounded-sm border w-full min-w-0 gap-4"
+                      className={`flex flex-col sm:flex-row justify-between items-start sm:items-center p-4 sm:p-5 rounded-sm border w-full min-w-0 gap-4 transition-opacity ${isHidden ? "opacity-60 bg-amber-500/[0.03]" : ""}`}
                       style={{ borderColor: "var(--border)", backgroundColor: "var(--panel)" }}
                     >
                       <div className="flex-1 min-w-0 w-full">
@@ -181,12 +206,28 @@ export function CertsAdmin({ initialCerts }: { initialCerts: any[] }) {
                           {tag && (
                             <span className="font-mono-label text-[10px] border px-2 py-0.5 rounded-sm flex-shrink-0" style={{ borderColor: "var(--border)", color: "var(--muted)" }}>{tag}</span>
                           )}
+                          {isHidden && (
+                            <span className="font-mono-label text-[10px] uppercase tracking-wider px-2 py-0.5 rounded-sm bg-amber-500/10 text-amber-700 dark:text-amber-400 border border-amber-500/30">
+                              Hidden
+                            </span>
+                          )}
                         </div>
                         <p className="font-mono-label text-xs tracking-wider uppercase mt-1 break-words opacity-80" style={{ color: "var(--muted)" }}>
                           {displayIssuer} {credId && `// ID: ${credId}`} • {cert.date}
                         </p>
                       </div>
-                      <div className="flex-shrink-0 flex gap-2 self-start sm:self-center">
+                      <div className="flex-shrink-0 flex items-center gap-2 self-start sm:self-center flex-wrap">
+                        <button 
+                          onClick={() => handleToggleHide(cert.id, isHidden)} 
+                          className={`font-mono-label text-xs uppercase tracking-wider px-3 sm:px-4 py-1.5 sm:py-2 border rounded-sm transition-colors cursor-pointer flex items-center gap-1.5 ${
+                            isHidden
+                              ? "bg-amber-500/10 text-amber-700 dark:text-amber-400 border-amber-500/30 hover:bg-amber-500/20"
+                              : "border-border text-muted hover:text-ink hover:bg-white/[0.02]"
+                          }`}
+                          title={isHidden ? "Unhide certificate on public portfolio" : "Hide certificate from public portfolio"}
+                        >
+                          {isHidden ? "👁‍🗨 Hidden" : "👁 Visible"}
+                        </button>
                         <button onClick={() => startEditing(cert)} className="font-mono-label text-xs uppercase tracking-wider px-3 sm:px-4 py-1.5 sm:py-2 border rounded-sm transition-colors cursor-pointer hover:bg-white/[0.02]" style={{ borderColor: "var(--border)", color: "var(--ink)" }}>
                           Edit
                         </button>

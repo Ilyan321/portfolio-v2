@@ -5,7 +5,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import ScrollReveal from "./ScrollReveal";
 
 export default function Projects({ dbProjects }: { dbProjects?: any[] }) {
-  const activeProjects = dbProjects || [];
+  const activeProjects = (dbProjects || []).filter((p) => p.hidden !== true && p.is_hidden !== true);
 
   // Allow expanding rows inline (single or multiple)
   const [expandedSlugs, setExpandedSlugs] = useState<string[]>([
