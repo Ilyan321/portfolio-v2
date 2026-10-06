@@ -3,14 +3,14 @@
 ---
 
 ### Issue #1: Complete Supabase pgvector RAG Ingestion & Fix Embedding Pipeline
-- **Status:** In Progress / Blocked on Token Permission
+- **Status:** Resolved
 - **Description:** 
   Hugging Face Serverless Inference API returned `403 Forbidden` (`This authentication method does not have sufficient permissions to call Inference Providers on behalf of user Ilyankhan69`).
-- **Resolution Plan:**
-  1. Regenerate Hugging Face token with *Inference Providers / Serverless Inference* permission checked (or switch to Google Gemini Embeddings / local ONNX runtime in `backend/update_brain.py`).
-  2. Run bulk ingestion across all 15 public and private repositories (`python3 backend/update_brain.py --all`).
-  3. Wire the FastAPI backend (`backend/main.py`) `/api/chat` route to vectorize incoming user queries, query `match_documents` in Supabase pgvector, and inject matching chunks into the Groq prompt.
-  4. Test streaming AI responses in the terminal UI with full context on all projects.
+- **Resolution:**
+  1. Updated Hugging Face token with Inference Provider permissions and switched model to `BAAI/bge-small-en-v1.5` (384d vectors matching Supabase `vector(384)`).
+  2. Ingested all repositories via `backend/update_brain.py --all` into Supabase `portfolio_documents` table.
+  3. Wired FastAPI `/api/chat` route in `backend/main.py` to embed user queries, search Supabase pgvector via `match_documents` RPC, and inject matching context chunks into Groq inference.
+  4. Verified streaming RAG AI responses with sub-second latency and deep project knowledge.
 
 ---
 

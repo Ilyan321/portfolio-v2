@@ -32,8 +32,8 @@ if not SUPABASE_URL or not SUPABASE_KEY:
     print("❌ Missing Supabase URL or Service Role Key in .env.local")
     sys.exit(1)
 
-# New Hugging Face router endpoint for feature extraction (all-MiniLM-L6-v2 produces 384d vectors)
-HF_API_URL = "https://router.huggingface.co/hf-inference/models/sentence-transformers/all-MiniLM-L6-v2"
+# New Hugging Face router endpoint for feature extraction (bge-small-en-v1.5 produces 384d vectors)
+HF_API_URL = "https://router.huggingface.co/hf-inference/models/BAAI/bge-small-en-v1.5"
 
 def get_embeddings(texts: list[str], retries=3) -> list[list[float]]:
     req = urllib.request.Request(HF_API_URL, method="POST")
@@ -63,8 +63,9 @@ def get_embeddings(texts: list[str], retries=3) -> list[list[float]]:
                 print(f"⚠️ HF API Error: {e.code} - {err_body}")
                 return None
         except Exception as e:
-            print(f"⚠️ Request Error: {str(e)}")
-            return None
+            print(f"⚠️ Request Error: {str(e)} - retrying in 3s...")
+            time.sleep(3)
+            continue
     return None
 
 def get_github_readme(repo_url: str) -> str:
