@@ -15,13 +15,17 @@ export default function ScrollReveal({ children, width = "fit-content", classNam
     <div style={{ width }} className={className}>
       <motion.div
         variants={{
-          hidden: { opacity: 0, y: 50 },
+          hidden: { opacity: 0, y: 35 },
           visible: { opacity: 1, y: 0 },
         }}
         initial="hidden"
         whileInView="visible"
-        viewport={{ once: true, margin: "-10% 0px" }}
-        transition={{ duration: 0.5, delay: delay, ease: "easeOut" }}
+        viewport={{ once: true, margin: "-8% 0px" }}
+        transition={{
+          duration: 0.8,
+          delay: delay,
+          ease: [0.16, 1, 0.3, 1], // Smooth Apple-style deceleration curve
+        }}
       >
         {children}
       </motion.div>
