@@ -8,10 +8,12 @@ export default function Contact({ dbProfile }: { dbProfile?: any }) {
   const site = dbProfile || defaultSite;
   const [submitted, setSubmitted] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setLoading(true);
+    setErrorMessage(null);
     const form = e.currentTarget;
     const formData = new FormData(form);
 
@@ -19,17 +21,25 @@ export default function Contact({ dbProfile }: { dbProfile?: any }) {
       name: formData.get("name"),
       email: formData.get("email"),
       message: formData.get("message"),
+      bot_field: formData.get("bot_field"),
     };
 
     try {
       // 1. Dispatch through Resend API route
-      await fetch("/api/contact", {
+      const res = await fetch("/api/contact", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload),
       });
 
-      // 2. Secondary log to Google Sheets
+      const resData = await res.json().catch(() => ({}));
+
+      if (!res.ok) {
+        setErrorMessage(resData.error || "Failed to deliver message. Please try again or email directly.");
+        return;
+      }
+
+      // 2. Secondary log to Google Sheets (non-blocking)
       fetch(
         "https://script.google.com/macros/s/AKfycbw0pvi3omFSFXjAYEM9POUHnbq0ChZQvG2Z7W4IyzilYK6wB3jNDdDFiJ1RJgIjwz8WBQ/exec",
         {
@@ -41,9 +51,8 @@ export default function Contact({ dbProfile }: { dbProfile?: any }) {
 
       setSubmitted(true);
       form.reset();
-    } catch (err) {
-      console.error(err);
-      setSubmitted(true);
+    } catch (err: any) {
+      setErrorMessage(err.message || "Network error. Please try again.");
     } finally {
       setLoading(false);
     }
@@ -141,6 +150,22 @@ export default function Contact({ dbProfile }: { dbProfile?: any }) {
             </div>
           ) : (
             <form onSubmit={handleSubmit} className="flex flex-col gap-5">
+              {/* Honeypot field for bot detection */}
+              <input
+                type="text"
+                name="bot_field"
+                tabIndex={-1}
+                autoComplete="off"
+                className="hidden"
+                style={{ display: "none" }}
+              />
+
+              {errorMessage && (
+                <div className="rounded-sm border border-red-500/30 bg-red-500/10 p-3 font-mono-label text-xs text-red-500">
+                  ✕ {errorMessage}
+                </div>
+              )}
+
               <div className="flex flex-col gap-2">
                 <label
                   htmlFor="name"
