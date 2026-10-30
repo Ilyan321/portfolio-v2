@@ -1,8 +1,8 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useRef } from "react";
 import { useRouter } from "next/navigation";
-import { saveSiteConfig } from "@/app/admin/actions";
+import { saveSiteConfig, uploadCVFile } from "@/app/admin/actions";
 
 export type ProfileData = {
   name: string;
@@ -32,10 +32,41 @@ export function ProfileAdmin({
   initialContacts: ContactsData;
 }) {
   const router = useRouter();
+  const fileInputRef = useRef<HTMLInputElement>(null);
   const [profile, setProfile] = useState<ProfileData>(initialProfile);
   const [contacts, setContacts] = useState<ContactsData>(initialContacts);
   const [isSaving, setIsSaving] = useState(false);
+  const [isUploading, setIsUploading] = useState(false);
+  const [isDragOver, setIsDragOver] = useState(false);
   const [statusMsg, setStatusMsg] = useState<{ type: "success" | "error"; text: string } | null>(null);
+
+  async function handleFileUpload(file: File) {
+    if (!file || file.type !== "application/pdf") {
+      setStatusMsg({ type: "error", text: "Please upload a valid PDF document." });
+      return;
+    }
+
+    setIsUploading(true);
+    setStatusMsg(null);
+
+    try {
+      const formData = new FormData();
+      formData.append("file", file);
+
+      const res = await uploadCVFile(formData);
+      if (!res.success || !res.url) {
+        setStatusMsg({ type: "error", text: `Upload failed: ${res.error}` });
+      } else {
+        setProfile((prev) => ({ ...prev, cvUrl: res.url! }));
+        setStatusMsg({ type: "success", text: "New CV uploaded and saved live!" });
+        router.refresh();
+      }
+    } catch (err: any) {
+      setStatusMsg({ type: "error", text: err.message || "Failed to upload CV file." });
+    } finally {
+      setIsUploading(false);
+    }
+  }
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -186,16 +217,68 @@ export function ProfileAdmin({
             />
           </div>
 
-          <div className="space-y-1">
-            <label className="font-mono-label text-[10px] uppercase tracking-widest" style={{ color: "var(--muted)" }}>
-              CV / Resume Download URL
+          <div className="space-y-2">
+            <label className="font-mono-label text-[10px] uppercase tracking-widest flex items-center justify-between" style={{ color: "var(--muted)" }}>
+              <span>CV / Resume PDF Document</span>
+              {profile.cvUrl && (
+                <a
+                  href={profile.cvUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-emerald-500 hover:underline lowercase font-mono text-[10px]"
+                >
+                  [ View Live PDF ↗ ]
+                </a>
+              )}
             </label>
+
+            {/* Drag & Drop PDF Dropzone */}
+            <div
+              onDragOver={(e) => {
+                e.preventDefault();
+                setIsDragOver(true);
+              }}
+              onDragLeave={() => setIsDragOver(false)}
+              onDrop={(e) => {
+                e.preventDefault();
+                setIsDragOver(false);
+                const file = e.dataTransfer.files?.[0];
+                if (file) handleFileUpload(file);
+              }}
+              onClick={() => fileInputRef.current?.click()}
+              className={`border-2 border-dashed rounded-sm p-4 text-center cursor-pointer transition-all duration-200 flex flex-col items-center justify-center gap-1.5 ${
+                isDragOver ? "border-emerald-500 bg-emerald-500/10 scale-[1.01]" : "hover:border-emerald-500/70"
+              }`}
+              style={{
+                borderColor: isDragOver ? "rgb(16, 185, 129)" : "var(--border)",
+                backgroundColor: isDragOver ? "rgba(16, 185, 129, 0.08)" : "var(--bg)",
+              }}
+            >
+              <input
+                ref={fileInputRef}
+                type="file"
+                accept="application/pdf"
+                className="hidden"
+                onChange={(e) => {
+                  const file = e.target.files?.[0];
+                  if (file) handleFileUpload(file);
+                }}
+              />
+              <span className="text-xl">📄</span>
+              <p className="font-mono-label text-[11px] uppercase tracking-wider" style={{ color: "var(--ink)" }}>
+                {isUploading ? "Uploading to Cloud Storage..." : "Drag & Drop New CV PDF Here, or Click to Browse"}
+              </p>
+              <p className="text-[10px] font-mono" style={{ color: "var(--muted)" }}>
+                Supports standard .pdf (updates live instantly)
+              </p>
+            </div>
+
             <input
               type="text"
               value={profile.cvUrl}
               onChange={(e) => setProfile({ ...profile, cvUrl: e.target.value })}
-              placeholder="/cv.pdf or Google Drive link"
-              className="w-full font-mono text-xs rounded-sm border p-3 outline-none transition-all focus:border-emerald-500"
+              placeholder="/cv.pdf or https://..."
+              className="w-full font-mono text-[11px] rounded-sm border p-2.5 outline-none transition-all focus:border-emerald-500 mt-1"
               style={{ backgroundColor: "var(--bg)", borderColor: "var(--border)", color: "var(--ink)" }}
             />
           </div>

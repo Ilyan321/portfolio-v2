@@ -258,6 +258,60 @@ export async function toggleCertVisibility(id: string, isHidden: boolean) {
   }
 }
 
+export async function uploadCVFile(formData: FormData) {
+  try {
+    checkAuth();
+    const file = formData.get("file") as File;
+    if (!file) return { success: false, error: "No file provided" };
+    if (file.type !== "application/pdf") return { success: false, error: "File must be a PDF" };
+
+    const arrayBuffer = await file.arrayBuffer();
+    const buffer = Buffer.from(arrayBuffer);
+    const fileName = `cv-${Date.now()}.pdf`;
+
+    const { error: uploadError } = await supabaseAdmin.storage
+      .from("resumes")
+      .upload(fileName, buffer, {
+        contentType: "application/pdf",
+        upsert: true,
+      });
+
+    if (uploadError) {
+      console.error("Storage upload error:", uploadError);
+      return { success: false, error: uploadError.message };
+    }
+
+    const { data: publicUrlData } = supabaseAdmin.storage
+      .from("resumes")
+      .getPublicUrl(fileName);
+
+    const publicUrl = publicUrlData.publicUrl;
+
+    // Automatically update the profile.cvUrl in v2_site_config
+    const { data: profileRow } = await supabaseAdmin
+      .from("v2_site_config")
+      .select("data")
+      .eq("key", "profile")
+      .single();
+
+    if (profileRow?.data) {
+      await supabaseAdmin.from("v2_site_config").upsert({
+        key: "profile",
+        data: { ...profileRow.data, cvUrl: publicUrl },
+        updated_at: new Date().toISOString(),
+      });
+    }
+
+    revalidatePath("/", "layout");
+    revalidatePath("/admin", "layout");
+
+    return { success: true, url: publicUrl };
+  } catch (err: any) {
+    console.error("uploadCVFile error:", err);
+    return { success: false, error: err.message };
+  }
+}
+
 // ----------------------------------------------------
 // Dynamic Site Configuration Server Actions
 // ----------------------------------------------------
