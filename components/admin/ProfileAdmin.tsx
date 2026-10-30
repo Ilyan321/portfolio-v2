@@ -257,7 +257,8 @@ export function ProfileAdmin({
               <input
                 ref={fileInputRef}
                 type="file"
-                accept="application/pdf"
+                accept="application/pdf,.pdf"
+                onClick={(e) => e.stopPropagation()}
                 className="hidden"
                 onChange={(e) => {
                   const file = e.target.files?.[0];
@@ -272,6 +273,20 @@ export function ProfileAdmin({
                 Supports standard .pdf (updates live instantly)
               </p>
             </div>
+
+            {/* Direct status message right under the dropzone for immediate feedback */}
+            {statusMsg && (
+              <div
+                className={`font-mono text-xs p-2.5 rounded-sm border ${
+                  statusMsg.type === "success"
+                    ? "border-emerald-500/40 bg-emerald-500/10 text-emerald-400"
+                    : "border-red-500/40 bg-red-500/10 text-red-400"
+                }`}
+              >
+                {statusMsg.type === "success" ? "✓ " : "✕ "}
+                {statusMsg.text}
+              </div>
+            )}
 
             <input
               type="text"
