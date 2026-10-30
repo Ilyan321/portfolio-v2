@@ -34,8 +34,14 @@ export async function updateProjectPositions(updates: { id: string; position: nu
 export async function createProject(data: any) {
   try {
     checkAuth();
-    const { data: newProj, error } = await supabaseAdmin.from("v2_projects").insert([data]).select().single();
+    const { hidden, ...projectData } = data;
+    const { data: newProj, error } = await supabaseAdmin.from("v2_projects").insert([projectData]).select().single();
     if (error) return { success: false, error: error.message };
+
+    if (hidden !== undefined && newProj?.id) {
+      await toggleProjectVisibility(newProj.id, hidden);
+    }
+
     revalidatePath("/", "layout");
     revalidatePath("/admin", "layout");
     return { success: true, project: newProj };
@@ -62,8 +68,14 @@ export async function deleteProject(id: string) {
 export async function updateProject(id: string, data: any) {
   try {
     checkAuth();
+    const { hidden, ...projectData } = data;
+
+    if (hidden !== undefined) {
+      await toggleProjectVisibility(id, hidden);
+    }
+
     if (id.startsWith("default-")) {
-      const { data: newProj, error } = await supabaseAdmin.from("v2_projects").insert([data]).select().single();
+      const { data: newProj, error } = await supabaseAdmin.from("v2_projects").insert([projectData]).select().single();
       if (error) return { success: false, error: error.message };
       revalidatePath("/", "layout");
       revalidatePath("/admin", "layout");
@@ -72,7 +84,7 @@ export async function updateProject(id: string, data: any) {
 
     const { data: updatedProj, error } = await supabaseAdmin
       .from("v2_projects")
-      .update(data)
+      .update(projectData)
       .eq("id", id)
       .select()
       .single();
@@ -81,7 +93,7 @@ export async function updateProject(id: string, data: any) {
       // Fallback: try inserting if not found
       const { data: insertedProj, error: insErr } = await supabaseAdmin
         .from("v2_projects")
-        .insert([{ ...data, id }])
+        .insert([{ ...projectData, id }])
         .select()
         .single();
       if (insErr) return { success: false, error: error.message };
@@ -101,14 +113,7 @@ export async function updateProject(id: string, data: any) {
 export async function toggleProjectVisibility(id: string, isHidden: boolean) {
   try {
     checkAuth();
-    if (!id.startsWith("default-")) {
-      await supabaseAdmin
-        .from("v2_projects")
-        .update({ hidden: isHidden })
-        .eq("id", id);
-    }
-    
-    // Also sync to hidden_items fallback in v2_site_config
+    // Sync to hidden_items in v2_site_config
     const { data: cfgRow } = await supabaseAdmin.from("v2_site_config").select("data").eq("key", "hidden_items").single();
     const currentHidden = cfgRow?.data?.projects || [];
     const newHiddenList = isHidden 
@@ -153,8 +158,14 @@ export async function updateCertPositions(updates: { id: string; position: numbe
 export async function createCert(data: any) {
   try {
     checkAuth();
-    const { data: newCert, error } = await supabaseAdmin.from("v2_certifications").insert([data]).select().single();
+    const { hidden, ...certData } = data;
+    const { data: newCert, error } = await supabaseAdmin.from("v2_certifications").insert([certData]).select().single();
     if (error) return { success: false, error: error.message };
+
+    if (hidden !== undefined && newCert?.id) {
+      await toggleCertVisibility(newCert.id, hidden);
+    }
+
     revalidatePath("/", "layout");
     revalidatePath("/admin", "layout");
     return { success: true, cert: newCert };
@@ -181,8 +192,14 @@ export async function deleteCert(id: string) {
 export async function updateCert(id: string, data: any) {
   try {
     checkAuth();
+    const { hidden, ...certData } = data;
+
+    if (hidden !== undefined) {
+      await toggleCertVisibility(id, hidden);
+    }
+
     if (id.startsWith("default-")) {
-      const { data: newCert, error } = await supabaseAdmin.from("v2_certifications").insert([data]).select().single();
+      const { data: newCert, error } = await supabaseAdmin.from("v2_certifications").insert([certData]).select().single();
       if (error) return { success: false, error: error.message };
       revalidatePath("/", "layout");
       revalidatePath("/admin", "layout");
@@ -191,7 +208,7 @@ export async function updateCert(id: string, data: any) {
 
     const { data: updatedCert, error } = await supabaseAdmin
       .from("v2_certifications")
-      .update(data)
+      .update(certData)
       .eq("id", id)
       .select()
       .single();
@@ -199,7 +216,7 @@ export async function updateCert(id: string, data: any) {
     if (error) {
       const { data: insertedCert, error: insErr } = await supabaseAdmin
         .from("v2_certifications")
-        .insert([{ ...data, id }])
+        .insert([{ ...certData, id }])
         .select()
         .single();
       if (insErr) return { success: false, error: error.message };
@@ -219,14 +236,7 @@ export async function updateCert(id: string, data: any) {
 export async function toggleCertVisibility(id: string, isHidden: boolean) {
   try {
     checkAuth();
-    if (!id.startsWith("default-")) {
-      await supabaseAdmin
-        .from("v2_certifications")
-        .update({ hidden: isHidden })
-        .eq("id", id);
-    }
-    
-    // Also sync to hidden_items fallback in v2_site_config
+    // Sync to hidden_items in v2_site_config
     const { data: cfgRow } = await supabaseAdmin.from("v2_site_config").select("data").eq("key", "hidden_items").single();
     const currentHidden = cfgRow?.data?.certs || [];
     const newHiddenList = isHidden 
