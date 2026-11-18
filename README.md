@@ -17,9 +17,6 @@
   <img src="app/icon.svg" width="90" height="90" alt="Ilyan Khan Official Emblem" />
 </a>
 
-<p align="center">
-  <b><code>REC ● 00:00:24:18 // 4K CINEMATIC HUD // 60 FPS</code></b>
-</p>
 
 <p align="center">
   <a href="https://www.ilyankhan.tech">
