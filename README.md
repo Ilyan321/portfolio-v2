@@ -23,6 +23,25 @@
 
 ---
 
+### Favicon 
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="100%" height="100%">
+  <rect width="512" height="512" rx="112" fill="#000000"/>
+  <rect x="2" y="2" width="508" height="508" rx="110" fill="none" stroke="#27272A" stroke-width="4"/>
+  <defs>
+    <clipPath id="sphere-clip">
+      <circle cx="256" cy="256" r="136"/>
+    </clipPath>
+  </defs>
+  <g clip-path="url(#sphere-clip)" fill="#FFFFFF">
+    <!-- Top-Right Primary Mass -->
+    <polygon points="196,100 412,100 412,316"/>
+    <!-- Middle Vector Slice -->
+    <polygon points="110,164 164,110 402,348 348,402"/>
+    <!-- Lower-Left Vector Slice -->
+    <polygon points="100,236 276,412 224,412 100,288"/>
+  </g>
+</svg>
+
 ## 🚀 Getting Started
 
 ```bash
